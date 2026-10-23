@@ -72,9 +72,28 @@ Steps, settings and checks: `tasks/security-review.md` "Phase 1 order".
       (10 bundles); every fix is present in the bundles. Rebuilding clean
       v15.0.1 does not reproduce upstream's committed bundles (780 lines of
       minifier renames): their build had no lockfile.
-- [ ] **You approve** the push to bobaseb-oc `main`
-- [ ] Settings applied; plugin updated from the marketplace; restart
-- [ ] Verify (the list in the report)
+- [x] **You approve** the push to bobaseb-oc `main`: f5633c1f8..4b346da1e,
+      fast-forward; `hardening` pushed too
+- [x] Settings applied (redaction + generic on, tool_uses 7 days, Read Gate
+      and memory instructions off, spool transport filesystem; cloud sync,
+      TeamBrain, Telegram, webhook and base-URL keys confirmed empty);
+      telemetry.json enabled=false; DO_NOT_TRACK=1 in ~/.zshrc;
+      ~/.claude-mem 0700. Plugin updated from the marketplace to 15.0.1 at
+      4b346da (installed files byte-identical to the build). v13 worker
+      (up since 12 Oct) stopped; v15 started through the hook's launcher entry.
+- [ ] Verify
+  - [x] worker 15.0.1 on 127.0.0.1:37777 only
+  - [x] DB migrated 40 → 67, 22,900 observations, quick_check ok
+  - [x] Origin-less POST of CLAUDE_MEM_DATA_DIR not persisted (H2)
+  - [x] tree-sitter provisioned by the worker, SHA-256 = pinned darwin-arm64
+  - [x] no ~/.local/bin/claude-mem; no rc edit by claude-mem
+  - [~] GET /api/settings masking: no secret values are set, so not
+        observable live (covered by upstream unit tests)
+  - [ ] after a Claude Code restart: SessionStart block arrives whole; spool
+        dir 0700 and entries 0600 after the first hook event
+  - [x] `alias claude-mem` (~/.zshrc:194) pointed at the removed 12.1.0
+        install; now `bun --cwd <marketplace scripts> <launcher>`, which
+        follows updates. (The conda block removed from ~/.zshrc was yours.)
 
 ## Phase 2: the tree (branch `feat/memory-tree` off `hardening`)
 
