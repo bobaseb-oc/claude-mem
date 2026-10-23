@@ -89,8 +89,24 @@ Steps, settings and checks: `tasks/security-review.md` "Phase 1 order".
   - [x] no ~/.local/bin/claude-mem; no rc edit by claude-mem
   - [~] GET /api/settings masking: no secret values are set, so not
         observable live (covered by upstream unit tests)
-  - [ ] after a Claude Code restart: SessionStart block arrives whole; spool
-        dir 0700 and entries 0600 after the first hook event
+  - [x] after the restart: spool dir 0700, entries 0600 (H4 live); hooks
+        reach the worker through the launcher entry. The context hook run
+        by hand gives a valid 1,488-char block (well under 10,000). The
+        restarted session was a resume, which the context hook skips by
+        design (#4423).
+  - [x] Found and fixed: no observation had been stored since 2026-10-21
+        10:50, in any project. Every observer call got `403 team not allowed
+        to access model ... claude-sonnet-4-6` (the gateway allows haiku-4-5,
+        sonnet-5, sonnet-5-5, opus-5, opus-5-5, haiku-5-5), and the worker
+        logged nothing. CLAUDE_MEM_MODEL (explicitly claude-sonnet-4-6) and
+        CLAUDE_MEM_TIER_SMART_MODEL (default alias `sonnet`) both set to
+        claude-sonnet-5-5; first new observation stored right after.
+  - Open: the worker logs observer API errors nowhere (worth a fork fix);
+        1,072 observer transcripts with tool I/O pile up in
+        ~/.claude/projects/-Users-…-claude-mem-observer-sessions; one
+        pending_messages row stuck in `processing` since 2026-07-20; the
+        "work state" block tells every session to use work_state_write
+        instead of the built-in to-do tool.
   - [x] `alias claude-mem` (~/.zshrc:194) pointed at the removed 12.1.0
         install; now `bun --cwd <marketplace scripts> <launcher>`, which
         follows updates. (The conda block removed from ~/.zshrc was yours.)
