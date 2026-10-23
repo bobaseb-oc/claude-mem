@@ -21,6 +21,9 @@ plugin/data.backup/
 plugin/evals-read-gate/
 package-lock.json
 bun.lock
+# Fork: the root lockfile is tracked, so the committed plugin bundles (built
+# from root devDependencies) can be rebuilt from the same versions.
+!/bun.lock
 !plugin/bun.lock
 !workers/sync-hub/bun.lock
 !services/sync-api/bun.lock
