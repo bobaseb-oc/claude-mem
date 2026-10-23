@@ -1,0 +1,25 @@
+src/services/worker-service.ts
+  s_454786f4742370::t_ea753e002db62a 503-528
+  s_454786f4742370::t_c825e1466d28cd 598
+  s_454786f4742370::t_7cdc227545872d 119
+  s_454786f4742370::t_6591b258b4773e 1187
+  s_454786f4742370::t_65561765c68812 269
+src/services/worker/ClaudeProvider.ts
+  s_454786f4742370::t_b14d6a09799c89 1165-1174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "30ed57dca4869dc75d0ba3cf8c2157abf9f7aa7a",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
