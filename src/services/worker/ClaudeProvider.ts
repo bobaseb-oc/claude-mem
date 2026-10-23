@@ -1162,6 +1162,16 @@ export class ClaudeProvider {
     return text;
   }
 
+  /** Fork: one memory-tree merge batch (memory-tree/TreeBuilder.ts), through the same hardened SDK path, on the observer model. */
+  async runTreeMergePrompt(prompt: string, project: string): Promise<string | null> {
+    return this.runStandaloneObserverPrompt(
+      prompt,
+      { sessionDbId: 0, contentSessionId: 'memory-tree', project },
+      this.getModelId(),
+      findClaudeExecutable('SDK'),
+    );
+  }
+
   private async *createMessageGenerator(
     session: ActiveSession,
     cwdTracker: { lastCwd: string | undefined },

@@ -116,6 +116,7 @@ import { DatabaseManager } from './worker/DatabaseManager.js';
 import { SessionManager } from './worker/SessionManager.js';
 import { SSEBroadcaster } from './worker/SSEBroadcaster.js';
 import { ClaudeProvider, classifyClaudeError } from './worker/ClaudeProvider.js';
+import { TreeBuilder } from './memory-tree/TreeBuilder.js';
 import type { WorkerRef } from './worker/agents/types.js';
 import { GeminiProvider, classifyGeminiError } from './worker/GeminiProvider.js';
 import { OpenRouterProvider, classifyOpenRouterError } from './worker/OpenRouterProvider.js';
@@ -265,6 +266,7 @@ export class WorkerService implements WorkerRef {
   private isShuttingDown: boolean = false;
   private bootWatchdog: ReturnType<typeof setTimeout> | null = null;
   private pendingSessionResumeTimer: ReturnType<typeof setInterval> | null = null;
+  private memoryTreeTimer: ReturnType<typeof setInterval> | null = null;
   private readonly hookSpool = new HookSpool();
   private readonly hookSpoolDrainer = new HookSpoolDrainer(this.hookSpool);
 
@@ -498,6 +500,32 @@ export class WorkerService implements WorkerRef {
     this.pendingSessionResumeTimer.unref?.();
   }
 
+  /** Fork: builds the memory tree for CLAUDE_MEM_TREE_PROJECTS once a minute (memory-tree/TreeBuilder.ts). */
+  private startMemoryTreeBuilder(): void {
+    if (this.memoryTreeTimer !== null || this.isShuttingDown) return;
+    const builder = new TreeBuilder({
+      db: () => this.dbManager.getSessionStore().db,
+      runPrompt: (prompt, project) => this.sdkAgent.runTreeMergePrompt(prompt, project),
+      settings: () => {
+        const settings = SettingsDefaultsManager.loadFromFile(USER_SETTINGS_PATH);
+        return { projects: settings.CLAUDE_MEM_TREE_PROJECTS, batch: Number.parseInt(settings.CLAUDE_MEM_TREE_BATCH, 10) || 24 };
+      },
+    });
+    this.memoryTreeTimer = setInterval(() => {
+      if (!this.initializationCompleteFlag || this.isShuttingDown) return;
+      void builder.tick().catch(error => logger.error('MEMORY_TREE', 'Tree build pass failed', {},
+        error instanceof Error ? error : new Error(String(error))));
+    }, 60_000);
+    this.memoryTreeTimer.unref?.();
+  }
+
+  private stopMemoryTreeBuilder(): void {
+    if (this.memoryTreeTimer !== null) {
+      clearInterval(this.memoryTreeTimer);
+      this.memoryTreeTimer = null;
+    }
+  }
+
   private stopPendingSessionResume(): void {
     if (this.pendingSessionResumeTimer !== null) {
       clearInterval(this.pendingSessionResumeTimer);
@@ -567,6 +595,7 @@ export class WorkerService implements WorkerRef {
     const sessionRoutes = new SessionRoutes(this.sessionManager, this.dbManager, this.sdkAgent, this.geminiAgent, this.openRouterAgent, this.sessionEventBroadcaster, this, this.completionHandler, this.codexAgent, this.openAICompatAgent);
     this.server.registerRoutes(sessionRoutes);
     this.startPendingSessionResume(sessionRoutes);
+    this.startMemoryTreeBuilder();
     attachIngestGeneratorStarter((sessionDbId, source) =>
       sessionRoutes.ensureGeneratorRunning(sessionDbId, source),
     );
@@ -1155,6 +1184,7 @@ export class WorkerService implements WorkerRef {
         this.workViewRoutes?.close();
         this.workViewRoutes = null;
         this.stopPendingSessionResume();
+        this.stopMemoryTreeBuilder();
         this.hookSpoolDrainer.stop();
         // Stop the idle monitor before the drain: its own trigger has
         // already disarmed it, and a route- or signal-initiated drain must
