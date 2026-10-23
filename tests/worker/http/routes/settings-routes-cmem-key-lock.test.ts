@@ -70,6 +70,14 @@ function postSettings(body: Record<string, string>): void {
   expect(json).toHaveBeenCalledWith({ success: true, message: 'Settings updated successfully' });
 }
 
+// Fork hardening H2 made the base URL file/env only, so a base-URL change is a
+// hand edit of settings.json; the key lock must hold for that edit too.
+function editSettingsFile(patch: Record<string, string>): void {
+  const settingsPath = paths.settings();
+  const current = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+  writeFileSync(settingsPath, JSON.stringify({ ...current, ...patch }, null, 2), 'utf-8');
+}
+
 describe('the cmem memory key stays with the cmem gateway', () => {
   const settingsPath = paths.settings();
   const realFetch = globalThis.fetch;
@@ -126,13 +134,16 @@ describe('the cmem memory key stays with the cmem gateway', () => {
     ['another host', 'https://attacker.example/v1'],
     ['a gateway lookalike', 'https://cmem.ai.attacker.example/api/inference/v1'],
     ['the default openrouter.ai endpoint', ''],
-  ])('is never sent to %s after a settings-API base-URL change', async (_label, newBaseUrl) => {
-    // Exactly what the viewer's Save does: the edited field plus the masked
-    // key echoed back from GET, which the API treats as "unchanged".
+  ])('is never sent to %s after a base-URL change', async (_label, newBaseUrl) => {
+    // What the viewer's Save does: the edited field plus the masked key echoed
+    // back from GET, which the API treats as "unchanged". The base URL is not
+    // HTTP-writable (H2), so the POST keeps the gateway; the change is a file edit.
     postSettings({
       CLAUDE_MEM_OPENROUTER_BASE_URL: newBaseUrl,
       CLAUDE_MEM_OPENROUTER_API_KEY: viewerMask(MEMORY_KEY),
     });
+    expect(JSON.parse(readFileSync(settingsPath, 'utf-8')).CLAUDE_MEM_OPENROUTER_BASE_URL).toBe(GATEWAY_BASE_URL);
+    editSettingsFile({ CLAUDE_MEM_OPENROUTER_BASE_URL: newBaseUrl });
     const persisted = JSON.parse(readFileSync(settingsPath, 'utf-8'));
     expect(persisted.CLAUDE_MEM_OPENROUTER_BASE_URL).toBe(newBaseUrl);
     expect(persisted.CLAUDE_MEM_OPENROUTER_API_KEY).toBe(MEMORY_KEY);
@@ -155,7 +166,7 @@ describe('the cmem memory key stays with the cmem gateway', () => {
     expect(requests).toEqual([{ url: `${GATEWAY_BASE_URL}/chat/completions`, authorization: `Bearer ${MEMORY_KEY}` }]);
   });
 
-  it('never sends a personal key to the gateway after a settings-API base-URL change', async () => {
+  it('never sends a personal key to the gateway after a base-URL change', async () => {
     writeFileSync(settingsPath, JSON.stringify({
       CLAUDE_MEM_PROVIDER: 'openrouter',
       CLAUDE_MEM_OPENROUTER_BASE_URL: '',
@@ -163,12 +174,10 @@ describe('the cmem memory key stays with the cmem gateway', () => {
       CLAUDE_MEM_OPENROUTER_API_KEY: PERSONAL_KEY,
     }, null, 2), 'utf-8');
 
-    // The viewer pairs the stored personal key (posted back masked) with the
-    // gateway's base URL.
-    postSettings({
-      CLAUDE_MEM_OPENROUTER_BASE_URL: GATEWAY_BASE_URL,
-      CLAUDE_MEM_OPENROUTER_API_KEY: viewerMask(PERSONAL_KEY),
-    });
+    // The stored personal key (posted back masked by the viewer) is paired
+    // with the gateway's base URL, by a file edit since H2.
+    postSettings({ CLAUDE_MEM_OPENROUTER_API_KEY: viewerMask(PERSONAL_KEY) });
+    editSettingsFile({ CLAUDE_MEM_OPENROUTER_BASE_URL: GATEWAY_BASE_URL });
 
     const provider = new OpenRouterProvider({} as any, {} as any);
     await expect(provider.formatTelegramWrapup(wrapupInput)).rejects.toThrow('OpenRouter API key not configured');

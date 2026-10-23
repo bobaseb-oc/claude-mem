@@ -67,7 +67,9 @@ describe('SettingsRoutes — CLAUDE_MEM_CLAUDE_CONFIG_DIR write whitelist (#2753
     }
   });
 
-  it('round-trips a valid path value through POST /api/settings', () => {
+  // Fork hardening H2: a config dir picks the credentials and transcripts the
+  // worker uses, so POST validates it but no longer persists it (file/env only).
+  it('does not persist a valid path value from POST /api/settings', () => {
     const { req, res, jsonSpy } = createMockReqRes({
       CLAUDE_MEM_CLAUDE_CONFIG_DIR: '/Users/matthewdnye/.ccs/instances/iveg50',
     });
@@ -76,7 +78,7 @@ describe('SettingsRoutes — CLAUDE_MEM_CLAUDE_CONFIG_DIR write whitelist (#2753
 
     expect(jsonSpy).toHaveBeenCalledWith({ success: true, message: 'Settings updated successfully' });
     const persisted = JSON.parse(readFileSync(settingsPath, 'utf-8'));
-    expect(persisted.CLAUDE_MEM_CLAUDE_CONFIG_DIR).toBe('/Users/matthewdnye/.ccs/instances/iveg50');
+    expect(persisted.CLAUDE_MEM_CLAUDE_CONFIG_DIR).not.toBe('/Users/matthewdnye/.ccs/instances/iveg50');
   });
 
   it('accepts an empty string (the documented "use the default" sentinel)', () => {

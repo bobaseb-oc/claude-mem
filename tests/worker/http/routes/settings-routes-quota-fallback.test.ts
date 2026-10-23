@@ -57,22 +57,24 @@ describe('SettingsRoutes — quota fallback keys', () => {
     }
   });
 
-  it('saves both keys from the viewer', () => {
+  // Fork hardening H2: the fallback provider decides where transcripts go, so
+  // it is file/env only; the viewer still saves the model.
+  it('saves the model from the viewer but not the provider', () => {
     const { jsonSpy } = post(handler, {
       CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER: 'claude',
       CLAUDE_MEM_QUOTA_FALLBACK_MODEL: 'claude-haiku-4-5-20251001',
     });
     expect(jsonSpy).toHaveBeenCalledWith({ success: true, message: 'Settings updated successfully' });
     const persisted = JSON.parse(readFileSync(settingsPath, 'utf-8'));
-    expect(persisted.CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER).toBe('claude');
+    expect(persisted.CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER).toBeUndefined();
     expect(persisted.CLAUDE_MEM_QUOTA_FALLBACK_MODEL).toBe('claude-haiku-4-5-20251001');
   });
 
-  it('turns the fallback off with an empty value', () => {
-    post(handler, { CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER: 'claude' });
-    const { jsonSpy } = post(handler, { CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER: '' });
+  it('keeps a file-configured fallback provider when the viewer posts another', () => {
+    writeFileSync(settingsPath, JSON.stringify({ CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER: 'off' }));
+    const { jsonSpy } = post(handler, { CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER: 'openrouter' });
     expect(jsonSpy).toHaveBeenCalledWith({ success: true, message: 'Settings updated successfully' });
-    expect(JSON.parse(readFileSync(settingsPath, 'utf-8')).CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER).toBe('');
+    expect(JSON.parse(readFileSync(settingsPath, 'utf-8')).CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER).toBe('off');
   });
 
   it('rejects an unknown fallback provider and leaves the file alone', () => {

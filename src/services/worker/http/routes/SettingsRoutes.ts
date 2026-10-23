@@ -118,10 +118,27 @@ function withoutEnvironmentEchoes(posted: Record<string, unknown>, settingsPath:
 
 // Spawn-binary paths: file/env only. Even if a key is accidentally re-added to
 // the HTTP write list below, this set keeps it from being persisted via POST.
+//
+// Fork hardening H2: an Origin-less client (curl, an agent's Bash) passes the
+// browser origin check, so these are file/env only too. A data or config dir
+// brings its own settings.json and grammar libraries (code run outside the
+// sandbox); base URLs, providers and presets decide where transcripts and keys
+// go; the worker host can open the API to the LAN; the folder CLAUDE.md flag
+// writes files in the user's repos.
 const FILE_ONLY_SETTING_KEYS = new Set([
   'CLAUDE_CODE_PATH',
   'CLAUDE_MEM_CODEX_PATH',
   'CLAUDE_MEM_CHROMA_UVX_PATH',
+  'CLAUDE_MEM_DATA_DIR',
+  'CLAUDE_MEM_CLAUDE_CONFIG_DIR',
+  'CLAUDE_MEM_OBSERVER_CLAUDE_CONFIG_DIR',
+  'CLAUDE_MEM_OPENROUTER_BASE_URL',
+  'CLAUDE_MEM_OPENAI_COMPAT_BASE_URL',
+  'CLAUDE_MEM_OPENAI_COMPAT_PRESET',
+  'CLAUDE_MEM_PROVIDER',
+  'CLAUDE_MEM_QUOTA_FALLBACK_PROVIDER',
+  'CLAUDE_MEM_WORKER_HOST',
+  'CLAUDE_MEM_FOLDER_CLAUDEMD_ENABLED',
 ]);
 
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
