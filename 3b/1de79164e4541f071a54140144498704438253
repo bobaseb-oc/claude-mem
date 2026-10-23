@@ -1,0 +1,21 @@
+tests/shared/hook-spool-hardening.test.ts
+  s_454786f4742370::t_e13f0f66aad6bf 1-97
+src/shared/hook-spool.ts
+  s_454786f4742370::t_681e0ddd9ef2b8 2,8-9,153-168,303-332,343-347,367-368,436,577,616,645,743
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3b1de79164e4541f071a54140144498704438253",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
