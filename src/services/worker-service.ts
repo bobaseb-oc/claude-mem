@@ -504,7 +504,7 @@ export class WorkerService implements WorkerRef {
 
   /** Fork: builds the memory tree for CLAUDE_MEM_TREE_PROJECTS once a minute (memory-tree/TreeBuilder.ts). */
   private startMemoryTreeBuilder(): void {
-    if (this.memoryTreeTimer !== null || this.isShuttingDown) return;
+    if (this.memoryTreeTimer || this.isShuttingDown) return;
     const builder = new TreeBuilder({
       db: () => this.dbManager.getSessionStore().db,
       runPrompt: (prompt, project) => this.sdkAgent.runTreeMergePrompt(prompt, project),
@@ -526,7 +526,7 @@ export class WorkerService implements WorkerRef {
   }
 
   private stopMemoryTreeBuilder(): void {
-    if (this.memoryTreeTimer !== null) {
+    if (this.memoryTreeTimer) {
       clearInterval(this.memoryTreeTimer);
       this.memoryTreeTimer = null;
     }

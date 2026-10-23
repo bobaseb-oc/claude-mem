@@ -7,6 +7,7 @@
 import express, { Request, Response } from 'express';
 import { DatabaseManager } from '../../DatabaseManager.js';
 import { BaseRouteHandler } from '../BaseRouteHandler.js';
+import { logger } from '../../../../utils/logger.js';
 import { leafCount, readyMerges, zoomNode } from '../../../memory-tree/MemoryTree.js';
 
 const WHOLE_NUMBER = /^\d{1,9}$/;
@@ -31,6 +32,7 @@ export class MemoryTreeRoutes extends BaseRouteHandler {
     }
     const zoomed = zoomNode(this.dbManager.getSessionStore().db, project, Number(level), Number(idx));
     if (!zoomed) {
+      logger.debug('MEMORY_TREE', 'Zoom outside the tree', { project, level, idx });
       res.status(404).type('text/plain').send(`No [L${level}:${idx}] in the memory tree of ${project}.`);
       return;
     }
