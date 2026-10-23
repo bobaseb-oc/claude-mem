@@ -1,0 +1,39 @@
+src/build/hook-shell-template.ts
+  s_454786f4742370::t_aa6b02530c0b87 409-416,423,425-429,431-433
+tests/infrastructure/hooks-plugin-root.test.ts
+  s_454786f4742370::t_ded2551d2969b0 74
+  s_454786f4742370::t_3bc60aa960a7db 1-73,75-77
+scripts/build-hooks.js
+  s_454786f4742370::t_647b780345f6ba 197-199
+  s_454786f4742370::t_ca741338b2cff4 272-275,277-279,287-291,294
+  s_454786f4742370::t_a2f9a8b4a4546a 321,323
+  s_454786f4742370::t_0108eeaf6a8357 151
+  s_454786f4742370::t_a68739a39ae53d 390
+tests/infrastructure/plugin-distribution.test.ts
+  s_454786f4742370::t_e925d818e2518e 345-346
+  s_454786f4742370::t_25eea70432053a 607-609,612-613
+  s_454786f4742370::t_e1c6ef4cd7ee43 623
+  s_454786f4742370::t_99b5cbb9b3dec0 11
+  s_454786f4742370::t_844072b10b9ff6 360,362,365
+  s_454786f4742370::t_0cef498b3051d1 591,594,596,598,640
+plugin/hooks/hooks.json
+  s_454786f4742370::t_29f45f2f9715f2 23,25-27,40,42-44,59,61-63,79,81-83,100,102-104,121,123-125,140,142-144,160,162-164
+tests/infrastructure/hooks-no-shell.test.ts
+  s_454786f4742370::t_dfd589f06ae67f 7,57-59,69,71,77,80,88,91,94,98-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "033e2cd13c59d0c8a656b70d82c5bee1c20f4bd5",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
