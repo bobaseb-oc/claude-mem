@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'fs';
 import { claudeCodeAdapter } from '../../../src/cli/adapters/claude-code.js';
+import { CLAUDE_MEM_LAUNCHER_ARGS } from '../../../src/build/hook-shell-template.js';
 
 const baseInput = {
   hook_event_name: 'SessionStart',
@@ -35,7 +36,8 @@ const { hooks } = JSON.parse(readFileSync(
 function commandsForSource(source: string): string[] {
   return hooks.SessionStart
     .filter(group => !group.matcher || new RegExp(group.matcher).test(source))
-    .flatMap(group => group.hooks.map(hook => [hook.command, ...(hook.args ?? [])].join(' ')));
+    // Named as the launcher's subcommand: the entry is `bun <launcher> <args>` (fork hardening H1).
+    .flatMap(group => group.hooks.map(hook => ['claude-mem', ...(hook.args ?? []).slice(CLAUDE_MEM_LAUNCHER_ARGS.length)].join(' ')));
 }
 
 describe('Claude Code SessionStart hook matchers', () => {

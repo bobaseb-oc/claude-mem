@@ -85,12 +85,17 @@ describe('Codex never carries the cmem gateway key', () => {
     expect(JSON.stringify(runTurn.mock.calls[0][0])).not.toContain(CMEM_KEY);
   });
 
-  it('selecting Codex in the viewer keeps the gateway configuration untouched for a switch back', () => {
+  // Fork hardening H2: the provider is file/env only, so the viewer's switch is
+  // not saved; the model is, and the gateway configuration stays untouched.
+  it('a viewer switch to Codex keeps the gateway configuration untouched', () => {
+    const before = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+    const providerBefore = { ...before, ...(before.env ?? {}) }.CLAUDE_MEM_PROVIDER;
     const json = postSettings({ CLAUDE_MEM_PROVIDER: 'codex', CLAUDE_MEM_CODEX_MODEL: 'gpt-6-luna' });
     expect(json).toHaveBeenCalledWith({ success: true, message: 'Settings updated successfully' });
     const persisted = JSON.parse(readFileSync(settingsPath, 'utf-8'));
     const flat = { ...persisted, ...(persisted.env ?? {}) };
-    expect(flat.CLAUDE_MEM_PROVIDER).toBe('codex');
+    expect(flat.CLAUDE_MEM_PROVIDER).toBe(providerBefore);
+    expect(flat.CLAUDE_MEM_CODEX_MODEL).toBe('gpt-6-luna');
     expect(flat.CLAUDE_MEM_OPENROUTER_BASE_URL).toBe(GATEWAY_URL);
     expect(flat.CLAUDE_MEM_OPENROUTER_API_KEY).toBe(CMEM_KEY);
     // The key was not copied into any Codex setting.
