@@ -691,6 +691,26 @@ Optional Dumb search: \`dumb_search({query, project})\`. Doesn’t reason about 
     }
   },
   {
+    // Fork Phase 2: open a line of the SessionStart memory tree.
+    name: 'memory_zoom',
+    description: 'Open a line of the memory tree shown at session start: a [Lk:i] line is level k, idx i. Returns the two lines it was made from (level k-1), or for level 0 the observation or prompt itself. Params: level, idx (required), project (defaults to this checkout).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        level: { type: 'number', description: 'k from [Lk:i]' },
+        idx: { type: 'number', description: 'i from [Lk:i]' },
+        project: { type: 'string', description: 'Project name; defaults to the current checkout' },
+      },
+      required: ['level', 'idx'],
+      additionalProperties: false,
+    },
+    annotations: READ_ONLY_TOOL_ANNOTATIONS,
+    handler: async (args: any) => {
+      const project = typeof args?.project === 'string' && args.project.trim() ? args.project.trim() : currentCheckout().primary;
+      return await callWorker('/api/memory-tree/zoom', { query: { project, level: String(args?.level), idx: String(args?.idx) }, text: true });
+    }
+  },
+  {
     name: 'get_tool_uses',
     description: 'Exceptional follow-up (raw tool I/O, rarely needed): fetch the ORIGINAL tool_input/tool_response for tool calls you already identified. Requires ids — run search/timeline/get_observations first and pass only the ids you actually need; these payloads are large and unsummarized. ids accept numeric tool_uses ids or tool_use_id strings. Params: ids (required), limit, project, contentSessionId.',
     inputSchema: {
