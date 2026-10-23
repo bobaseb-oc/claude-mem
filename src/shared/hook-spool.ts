@@ -1,10 +1,12 @@
 import { createHash, randomBytes } from 'crypto';
-import { existsSync, linkSync, mkdirSync, opendirSync, readdirSync, readFileSync, renameSync, rmSync, unlinkSync } from 'fs';
+import { chmodSync, existsSync, linkSync, mkdirSync, opendirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, unlinkSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { writeJsonFileAtomic } from './atomic-json.js';
 import { resolveDataDir } from './paths.js';
 import { normalizePlatformSource } from './platform-source.js';
 import { logger } from '../utils/logger.js';
+import { redactJsonStrings } from '../utils/redaction.js';
+import { stripMemoryTagsFromJsonStrings } from '../utils/tag-stripping.js';
 import type { AgentRole, InstructionState, WorkStateOutcome } from './work-state-telemetry.js';
 
 /**
@@ -149,6 +151,22 @@ const EXPIRED_DIRNAME = 'expired';
 export const HOOK_SPOOL_RETRY_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
+ * Fork hardening H4: an entry moved to `expired/` or `corrupt/` is deleted
+ * (with a log line) this long after it was moved there. Retired entries hold
+ * tool I/O; kept forever, they were a growing store of it.
+ */
+export const HOOK_SPOOL_RETIRED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Moves a spool file into `retiredDirectory` (0700), dated now so the retention counts from here. */
+function retireSpoolFile(source: string, retiredDirectory: string, filename: string): void {
+  mkdirSync(retiredDirectory, { recursive: true, mode: 0o700 });
+  const destination = join(retiredDirectory, filename);
+  renameSync(source, destination);
+  const now = new Date();
+  utimesSync(destination, now, now);
+}
+
+/**
  * A `session_end` for a session the worker never registered can never succeed:
  * `unknown_session` is returned only when the worker is up and its DB has no
  * such session (a DB outage throws instead, retrying the whole pass), and a
@@ -282,6 +300,36 @@ export class HookSpool {
     return join(this.directory, EXPIRED_DIRNAME);
   }
 
+  /** The spool directory, created 0700 (and narrowed to it if it already exists). */
+  private ensurePrivateDirectory(): void {
+    mkdirSync(this.directory, { recursive: true, mode: 0o700 });
+    if (process.platform !== 'win32' && (statSync(this.directory).mode & 0o777) !== 0o700) {
+      chmodSync(this.directory, 0o700);
+    }
+  }
+
+  /** Deletes entries moved to expired/ or corrupt/ before `cutoffEpochMs`. */
+  private purgeRetiredBefore(cutoffEpochMs: number): void {
+    for (const retiredDirectory of [this.expiredDirectory, this.corruptDirectory]) {
+      let filenames: string[];
+      try {
+        filenames = readdirSync(retiredDirectory);
+      } catch {
+        continue;
+      }
+      for (const filename of filenames) {
+        const path = join(retiredDirectory, filename);
+        try {
+          if (statSync(path).mtimeMs >= cutoffEpochMs) continue;
+          unlinkSync(path);
+          logger.info('HOOK', 'Deleted a retired hook spool entry past its retention', { file: filename, retiredDirectory });
+        } catch {
+          // Gone already (a concurrent drain), or unreadable: try again next drain.
+        }
+      }
+    }
+  }
+
   /**
    * Writes (or overwrites) this event's file. Returns the file path.
    * `requestedAtEpochMs` is for carrying an existing timestamp over (legacy
@@ -292,7 +340,11 @@ export class HookSpool {
     payload: HookSpoolPayloadByKind[K],
     requestedAtEpochMs?: number,
   ): string {
-    const normalizedPayload = { ...payload, platformSource: normalizePlatformSource(payload.platformSource) };
+    // Fork hardening H4: memory tags stripped and secrets redacted (when on)
+    // before anything reaches disk; the worker's own pass on ingest is then a
+    // no-op. Every string is cleaned, so the payload keeps its shape.
+    const cleanedPayload = redactJsonStrings(stripMemoryTagsFromJsonStrings(payload));
+    const normalizedPayload = { ...cleanedPayload, platformSource: normalizePlatformSource(cleanedPayload.platformSource) };
     let entryPath = join(this.directory, `${kind}-${hookSpoolKeyFor(kind, normalizedPayload)}.json`);
     const toolUseId = (normalizedPayload as { toolUseId?: unknown }).toolUseId;
     if (typeof toolUseId === 'string' && FILENAME_SAFE_TOOL_USE_ID.test(toolUseId)) {
@@ -312,7 +364,8 @@ export class HookSpool {
       }
     }
     const enqueuedAtEpochMs = this.existingEnqueuedAt(entryPath) ?? requestedAtEpochMs ?? monotonicNowEpochMs();
-    writeJsonFileAtomic(entryPath, { kind, payload: normalizedPayload, enqueuedAtEpochMs });
+    this.ensurePrivateDirectory();
+    writeJsonFileAtomic(entryPath, { kind, payload: normalizedPayload, enqueuedAtEpochMs }, { mode: 0o600 });
     return entryPath;
   }
 
@@ -380,6 +433,7 @@ export class HookSpool {
 
     // A marker outlives its file only when a crash hit between unlink and clear.
     consumedMarkers?.pruneConsumedBefore(Date.now() - HOOK_SPOOL_RETRY_WINDOW_MS);
+    this.purgeRetiredBefore(Date.now() - HOOK_SPOOL_RETIRED_RETENTION_MS);
 
     // A session's summary and its end wait behind an observation of that
     // session ingest has not accepted yet, so they never overtake the work they
@@ -520,8 +574,7 @@ export class HookSpool {
       const current = parseHookSpoolEntry(readFileSync(claimedPath, 'utf8'));
       if (!('corruptReason' in current) && canonicalJson(current) === canonicalJson(file.entry)) {
         if (rejectionReason) {
-          mkdirSync(this.corruptDirectory, { recursive: true });
-          renameSync(claimedPath, join(this.corruptDirectory, file.filename));
+          retireSpoolFile(claimedPath, this.corruptDirectory, file.filename);
           logger.error('HOOK', rejectionReason, { file: file.filename, corruptDirectory: this.corruptDirectory });
         } else unlinkSync(claimedPath);
         return true;
@@ -560,8 +613,7 @@ export class HookSpool {
       expiredDirectory: this.expiredDirectory,
     };
     try {
-      mkdirSync(this.expiredDirectory, { recursive: true });
-      renameSync(file.path, join(this.expiredDirectory, file.filename));
+      retireSpoolFile(file.path, this.expiredDirectory, file.filename);
     } catch (error) {
       // ENOENT: a concurrent drain (another worker process) already moved it.
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return true;
@@ -590,8 +642,7 @@ export class HookSpool {
   private quarantine(filename: string, reason: string): boolean {
     const source = join(this.directory, filename);
     try {
-      mkdirSync(this.corruptDirectory, { recursive: true });
-      renameSync(source, join(this.corruptDirectory, filename));
+      retireSpoolFile(source, this.corruptDirectory, filename);
       logger.error('HOOK', 'Quarantined corrupt hook spool entry', {
         file: filename,
         reason,
@@ -689,8 +740,7 @@ export function migrateLegacySessionEndReplay(
       migrated++;
       continue;
     }
-    mkdirSync(spool.corruptDirectory, { recursive: true });
-    renameSync(legacyPath, join(spool.corruptDirectory, `legacy-session-end-${filename}`));
+    retireSpoolFile(legacyPath, spool.corruptDirectory, `legacy-session-end-${filename}`);
     logger.error('HOOK', 'Quarantined malformed legacy SessionEnd replay entry', {
       file: filename,
       corruptDirectory: spool.corruptDirectory,
