@@ -570,6 +570,8 @@ export async function generateServerSessionStartContext(
 function memoryTreeSectionFor(db: Database, project: string): string {
   try {
     const settings = SettingsDefaultsManager.loadFromFile(USER_SETTINGS_PATH);
+    // With the view file on, CLAUDE.local.md imports the tree; don't inject it twice.
+    if ((Number.parseInt(settings.CLAUDE_MEM_TREE_FILE_BYTES, 10) || 0) > 0) return '';
     return treeContextSection(db, project, {
       projects: settings.CLAUDE_MEM_TREE_PROJECTS,
       viewChars: Number.parseInt(settings.CLAUDE_MEM_TREE_VIEW_CHARS, 10) || 6000,
