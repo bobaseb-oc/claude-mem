@@ -1,0 +1,61 @@
+tests/ui/viewer/catalog-live-counts.browser.test.ts
+  s_454786f4742370::t_b54635e7940249 161
+tests/ui/viewer/catalog-live-project.browser.test.ts
+  s_454786f4742370::t_c2188dfb6a87c5 41
+tests/ui/viewer/context-preview-populated-source.browser.test.ts
+  s_454786f4742370::t_f456ebc3966edc 50
+tests/ui/viewer/context-preview-selection.browser.test.ts
+  s_454786f4742370::t_98040b90756ef8 108
+tests/ui/viewer/deletion-lifecycle.browser.test.ts
+  s_454786f4742370::t_4ceb8e6c051ba3 141
+tests/ui/viewer/empty-filter-pagination.browser.test.ts
+  s_454786f4742370::t_18afd0f29d14f0 87,182
+tests/ui/viewer/log-clear-race.browser.test.ts
+  s_454786f4742370::t_3f6019ed739954 27
+tests/ui/viewer/log-multiline-filter.browser.test.ts
+  s_454786f4742370::t_b0e47b50b62be8 105
+tests/ui/viewer/logs-all-components.browser.test.ts
+  s_454786f4742370::t_2c0b03026a3ff3 84
+tests/ui/viewer/logs-select-all.browser.test.ts
+  s_454786f4742370::t_fe1f7aeffb0ab3 70
+tests/ui/viewer/observation-metadata-retention.browser.test.ts
+  s_454786f4742370::t_a74e4d0a41a09e 42
+tests/ui/viewer/pagination-commit.browser.test.ts
+  s_454786f4742370::t_202fda73101557 183
+tests/ui/viewer/pagination-recovery.browser.test.ts
+  s_454786f4742370::t_11b169d509063a 109
+tests/ui/viewer/pagination-stale-failure.browser.test.ts
+  s_454786f4742370::t_d86530270cb733 100
+tests/ui/viewer/pagination-visit.browser.test.ts
+  s_454786f4742370::t_51b0f60997f8df 153
+tests/ui/viewer/session-keyboard-actions.browser.test.ts
+  s_454786f4742370::t_371741f0e4f9a8 33
+tests/ui/viewer/session-list-retry.browser.test.ts
+  s_454786f4742370::t_bec35ec72483ac 94
+tests/ui/viewer/settings-claude-auth-method.browser.test.ts
+  s_454786f4742370::t_f70e8835d21626 51
+tests/ui/viewer/settings-count-clear.browser.test.ts
+  s_454786f4742370::t_3a1dac090f4028 75
+tests/ui/viewer/settings-load-gate.browser.test.ts
+  s_454786f4742370::t_3b6a9bd26ecf1e 117
+tests/ui/viewer/settings-save-draft.browser.test.ts
+  s_454786f4742370::t_9c88569c3addb8 54
+tests/worker/http/routes/restart-page-timeout.browser.test.ts
+  s_454786f4742370::t_d453498a48f82e 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8edbab49ba3328ac88c007cc02f1fd6b4a2d43e7",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
