@@ -1,0 +1,28 @@
+plugin/scripts/version-check.js
+  s_454786f4742370::t_b5c2aef9a4928e 11-14
+src/services/worker/tree-sitter-cli-provisioning.ts
+  s_454786f4742370::t_196343b4813794 32-34,37
+tests/setup-runtime.test.ts
+  s_454786f4742370::t_32116455fc3c7c 386-387,390
+src/services/smart-file-read/tree-sitter-cli-provision.ts
+  s_454786f4742370::t_658cea223d3a7e 227-235
+  s_454786f4742370::t_cdb1bf52dc4467 127-145
+tests/worker/tree-sitter-cli-unverified.test.ts
+  s_454786f4742370::t_495466c1d24457 1-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e4307083f5798e9c8d5101550ec45a7784e52d1f",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
