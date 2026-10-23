@@ -31,7 +31,7 @@ function registeredSessionStartTimeoutSeconds(hooksFile: string, hookInvocation:
   const entry = parsed.hooks.SessionStart
     .flatMap(group => group.hooks)
     .find(hook => Array.isArray(hook.args)
-      ? hook.args.join(' ') === hookInvocation
+      ? hook.args.join(' ').endsWith(hookInvocation)
       : hook.command.includes(`"$_P/scripts/worker-service.cjs" ${hookInvocation}`));
   return entry?.timeout;
 }

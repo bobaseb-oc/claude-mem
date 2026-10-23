@@ -20,8 +20,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "start"
             ],
             "timeout": 60,
@@ -34,26 +37,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "context"
             ],
             "timeout": 60
-          }
-        ]
-      },
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node",
-            "args": [
-              "${CLAUDE_PLUGIN_ROOT}/scripts/ensure-launcher.cjs"
-            ],
-            "timeout": 180
           }
         ]
       }
@@ -63,8 +56,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "session-init"
@@ -80,8 +76,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "observation"
@@ -98,8 +97,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "observation"
@@ -116,8 +118,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "file-context"
@@ -132,8 +137,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "summarize"
@@ -149,8 +157,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "claude-mem",
+            "command": "bun",
             "args": [
+              "--cwd",
+              "${CLAUDE_PLUGIN_ROOT}/scripts",
+              "${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs",
               "hook",
               "claude-code",
               "session-end"

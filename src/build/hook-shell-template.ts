@@ -406,28 +406,29 @@ export function buildShellCommand(options: ShellTemplateOptions): string {
  * Shell-free Claude Code hook entry (plan-17 #3605). With `args` present,
  * Claude Code resolves `command` on PATH and spawns it directly, so there is
  * no bash, no PATH prelude and no console window on Windows
- * (https://code.claude.com/docs/en/hooks#core-fields). The on-PATH
- * `claude-mem` launcher (src/launcher/claude-mem-launcher.ts) resolves the
- * plugin root itself and passes `args` through to `worker-service.cjs`.
+ * (https://code.claude.com/docs/en/hooks#core-fields). Bun runs the plugin's
+ * own launcher (src/launcher/claude-mem-launcher.ts) by absolute path, which
+ * resolves the plugin root and passes `args` through to `worker-service.cjs`.
+ *
+ * Fork hardening H1: never a `claude-mem` looked up on PATH (whatever comes
+ * first there would get every hook payload), and `--cwd` the plugin's scripts
+ * so Bun never loads the project's bunfig.toml preload or .env. Claude Code
+ * substitutes `${CLAUDE_PLUGIN_ROOT}` in `args`; payloads carry `cwd`.
  */
 export interface ExecHookCommand {
   command: string;
   args: string[];
 }
 
-export const CLAUDE_MEM_LAUNCHER_COMMAND = 'claude-mem';
+export const CLAUDE_MEM_LAUNCHER_COMMAND = 'bun';
 
-/** `claude-mem <workerServiceArguments…>` → `worker-service.cjs <workerServiceArguments…>`. */
+export const CLAUDE_MEM_LAUNCHER_ARGS = [
+  '--cwd',
+  '${CLAUDE_PLUGIN_ROOT}/scripts',
+  '${CLAUDE_PLUGIN_ROOT}/scripts/claude-mem-launcher.cjs',
+];
+
+/** `bun <plugin launcher> <workerServiceArguments…>` → `worker-service.cjs <workerServiceArguments…>`. */
 export function buildExecHook(workerServiceArguments: string[]): ExecHookCommand {
-  return { command: CLAUDE_MEM_LAUNCHER_COMMAND, args: [...workerServiceArguments] };
-}
-
-/**
- * The single non-`claude-mem` runtime entry: the SessionStart self-heal that
- * compiles the launcher onto PATH when it is missing or stale (SPIKE
- * Decision 1). `node` is spawned directly; `${CLAUDE_PLUGIN_ROOT}` is
- * substituted by Claude Code in `args`.
- */
-export function buildEnsureLauncherExecHook(): ExecHookCommand {
-  return { command: 'node', args: ['${CLAUDE_PLUGIN_ROOT}/scripts/ensure-launcher.cjs'] };
+  return { command: CLAUDE_MEM_LAUNCHER_COMMAND, args: [...CLAUDE_MEM_LAUNCHER_ARGS, ...workerServiceArguments] };
 }

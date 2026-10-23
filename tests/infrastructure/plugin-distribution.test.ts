@@ -6,9 +6,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {
   buildCodexWindowsCommand,
-  buildEnsureLauncherExecHook,
   buildExecHook,
   buildShellCommand,
+  CLAUDE_MEM_LAUNCHER_ARGS,
 } from '../../src/build/hook-shell-template.js';
 import { HOOK_TIMEOUTS } from '../../src/shared/hook-constants.js';
 import { FILE_CONTEXT_WORKER_BUDGET_MS } from '../../src/cli/handlers/file-context.js';
@@ -342,8 +342,8 @@ describe('Plugin Distribution - hooks.json Integrity', () => {
         .map(([eventName, groups]: [string, any]) => [
           eventName,
           groups.flatMap((group: any) => group.hooks)
-            .filter((hook: any) => hook.command === 'claude-mem')
-            .map((hook: any) => hook.args),
+            .filter((hook: any) => hook.command === 'bun')
+            .map((hook: any) => hook.args.slice(CLAUDE_MEM_LAUNCHER_ARGS.length)),
         ]),
     );
     expect(launcherArgsByEvent).toEqual({
@@ -357,23 +357,12 @@ describe('Plugin Distribution - hooks.json Integrity', () => {
     });
   });
 
-  it('self-heals the launcher with one shell-free node entry on SessionStart startup only', () => {
+  it('has no launcher self-heal hook: nothing is compiled onto PATH (fork hardening H1)', () => {
     const parsed = readJson('plugin/hooks/hooks.json');
-    const ensureLauncherGroups = parsed.hooks.SessionStart.filter((group: any) =>
+    const nodeGroups = parsed.hooks.SessionStart.filter((group: any) =>
       group.hooks.some((hook: any) => hook.command === 'node'),
     );
-    expect(ensureLauncherGroups).toEqual([{
-      matcher: 'startup',
-      hooks: [{
-        type: 'command',
-        command: 'node',
-        args: ['${CLAUDE_PLUGIN_ROOT}/scripts/ensure-launcher.cjs'],
-        // Synchronous: an async hook's systemMessage never reaches the user,
-        // and that message is how a failed self-heal is reported.
-        timeout: 180,
-      }],
-    }]);
-    expect(existsSync(path.join(projectRoot, 'plugin/scripts/ensure-launcher.cjs'))).toBe(true);
+    expect(nodeGroups).toEqual([]);
   });
 
   // The Setup entry is the only shell-form hook left (it fires only on
@@ -599,14 +588,14 @@ describe('Plugin Distribution - Non-blocking bookkeeping hooks (#3206)', () => {
     const stop = parsed.hooks.Stop[0].hooks[0];
     const sessionEnd = parsed.hooks.SessionEnd[0].hooks[0];
 
-    expect(postToolUse.args).toEqual(['hook', 'claude-code', 'observation']);
+    expect(postToolUse.args.slice(CLAUDE_MEM_LAUNCHER_ARGS.length)).toEqual(['hook', 'claude-code', 'observation']);
     expect(postToolUse.async).toBe(true);
     expect(parsed.hooks.PostToolUseFailure[0].matcher).toBe('*');
-    expect(postToolUseFailure.args).toEqual(['hook', 'claude-code', 'observation']);
+    expect(postToolUseFailure.args.slice(CLAUDE_MEM_LAUNCHER_ARGS.length)).toEqual(['hook', 'claude-code', 'observation']);
     expect(postToolUseFailure.async).toBe(true);
-    expect(stop.args).toEqual(['hook', 'claude-code', 'summarize']);
+    expect(stop.args.slice(CLAUDE_MEM_LAUNCHER_ARGS.length)).toEqual(['hook', 'claude-code', 'summarize']);
     expect(stop.async).toBe(true);
-    expect(sessionEnd.args).toEqual(['hook', 'claude-code', 'session-end']);
+    expect(sessionEnd.args.slice(CLAUDE_MEM_LAUNCHER_ARGS.length)).toEqual(['hook', 'claude-code', 'session-end']);
     expect(sessionEnd.async).toBe(true);
   });
 
@@ -615,12 +604,13 @@ describe('Plugin Distribution - Non-blocking bookkeeping hooks (#3206)', () => {
     const parsed = JSON.parse(readFileSync(hooksPath, 'utf-8'));
 
     const sessionStart = parsed.hooks.SessionStart.flatMap((group: any) => group.hooks);
-    const workerStart = sessionStart.find((hook: any) => hook.command === 'claude-mem' && hook.args?.[0] === 'start');
-    const context = sessionStart.find((hook: any) => hook.command === 'claude-mem' && hook.args?.join(' ') === 'hook claude-code context');
+    const workerArgs = (hook: any) => (hook.args ?? []).slice(CLAUDE_MEM_LAUNCHER_ARGS.length);
+    const workerStart = sessionStart.find((hook: any) => hook.command === 'bun' && workerArgs(hook)[0] === 'start');
+    const context = sessionStart.find((hook: any) => hook.command === 'bun' && workerArgs(hook).join(' ') === 'hook claude-code context');
     const userPromptSubmit = parsed.hooks.UserPromptSubmit[0].hooks[0];
 
-    // start, context, and the ensure-launcher self-heal.
-    expect(sessionStart).toHaveLength(3);
+    // start and context (no ensure-launcher self-heal: fork hardening H1).
+    expect(sessionStart).toHaveLength(2);
     expect(parsed.hooks.SessionStart[1].matcher).toBe('startup|clear|compact');
     // `start` only prints a status envelope, and the context hook lazily
     // spawns the worker itself, so session start need not wait for it.
@@ -630,7 +620,7 @@ describe('Plugin Distribution - Non-blocking bookkeeping hooks (#3206)', () => {
     // shows the systemMessage to the user, which would hide the startup
     // timeline, the viewer link and the trial notice.
     expect(context).not.toHaveProperty('async');
-    expect(userPromptSubmit.args).toEqual(['hook', 'claude-code', 'session-init']);
+    expect(workerArgs(userPromptSubmit)).toEqual(['hook', 'claude-code', 'session-init']);
     // Keep prompt-row persistence ordered before downstream hooks consume it.
     expect(userPromptSubmit).not.toHaveProperty('async');
   });
@@ -647,7 +637,7 @@ describe('Plugin Distribution - Non-blocking bookkeeping hooks (#3206)', () => {
       expect(matcher.test(tool)).toBe(true);
     }
     expect(matcher.test('save_memory')).toBe(false);
-    expect(fileContext.args).toEqual(['hook', 'claude-code', 'file-context']);
+    expect(fileContext.args.slice(CLAUDE_MEM_LAUNCHER_ARGS.length)).toEqual(['hook', 'claude-code', 'file-context']);
     // Claude Code ignores permissionDecision from an async hook, so an async
     // file-context hook could never block a whole-file Read.
     expect(fileContext).not.toHaveProperty('async');
@@ -697,9 +687,6 @@ const CLAUDE_EXEC_EXPECTATIONS: Record<string, Record<string, unknown>> = {
   // the raw JSON at the top of every session.
   'SessionStart.0.0': claudeExecHook(['start'], { timeout: 60, async: true }),
   'SessionStart.1.0': claudeExecHook(['hook', 'claude-code', 'context'], { timeout: 60 }),
-  // Synchronous on purpose: only a sync hook's systemMessage is shown to the
-  // user, and ensure-launcher.cjs reports a failed self-heal that way.
-  'SessionStart.2.0': { type: 'command', ...buildEnsureLauncherExecHook(), timeout: 180 },
   'UserPromptSubmit.0.0': claudeExecHook(['hook', 'claude-code', 'session-init'], { timeout: SESSION_INIT_HOOK_TIMEOUT_SECONDS }),
   'PostToolUse.0.0': claudeExecHook(['hook', 'claude-code', 'observation'], { timeout: 120, async: true }),
   'PostToolUseFailure.0.0': claudeExecHook(['hook', 'claude-code', 'observation'], { timeout: 120, async: true }),
