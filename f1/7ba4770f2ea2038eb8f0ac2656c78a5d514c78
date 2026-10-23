@@ -1,0 +1,23 @@
+tests/memory-tree/tree-builder.test.ts
+  s_454786f4742370::t_2667c56f505eba 1-116
+src/services/memory-tree/TreeBuilder.ts
+  s_454786f4742370::t_4a7b7472ded793 1-112
+src/utils/logger.ts
+  s_454786f4742370::t_c6349a8c2812ad 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f17ba4770f2ea2038eb8f0ac2656c78a5d514c78",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
