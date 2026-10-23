@@ -101,12 +101,24 @@ Steps, settings and checks: `tasks/security-review.md` "Phase 1 order".
         logged nothing. CLAUDE_MEM_MODEL (explicitly claude-sonnet-4-6) and
         CLAUDE_MEM_TIER_SMART_MODEL (default alias `sonnet`) both set to
         claude-sonnet-5-5; first new observation stored right after.
-  - Open: the worker logs observer API errors nowhere (worth a fork fix);
-        1,072 observer transcripts with tool I/O pile up in
-        ~/.claude/projects/-Users-…-claude-mem-observer-sessions; one
-        pending_messages row stuck in `processing` since 2026-07-20; the
-        "work state" block tells every session to use work_state_write
-        instead of the built-in to-do tool.
+  - [x] The 403 was logged, but as "authentication failed; run /login",
+        which cannot fix it. A refused model now has its own class
+        (auth:observer_model_access), log line and SessionStart banner
+        naming the model setting (882758daa).
+  - [x] Observer transcripts (raw tool I/O, picked up by chat importers in
+        ~/.claude/projects): CLAUDE_MEM_OBSERVER_CLAUDE_CONFIG_DIR =
+        ~/.claude-mem/observer-claude; 685 older than 7 days deleted, 387
+        moved there. Observer still signs in (8 observations right after).
+  - [x] CLAUDE_MEM_WORK_STATE_ENABLED=false (no "use work_state_write
+        instead of your to-do tool" block).
+  - [x] pending_messages row 54039, stuck in `processing` since
+        2026-07-20, deleted.
+  - Pushing to main runs upstream's workflows in the fork. CI and Windows
+    passed on 4b346da; "Deploy Install Scripts" failed at Vercel (no
+    secrets in the fork). Disabled in the fork (`gh workflow enable` undoes):
+    Deploy Install Scripts, Publish to npm, Claude Code, Close Tracked
+    Issues, Convert Feature Requests to Discussions, Summarize new issues.
+    Active: CI, Windows.
   - [x] `alias claude-mem` (~/.zshrc:194) pointed at the removed 12.1.0
         install; now `bun --cwd <marketplace scripts> <launcher>`, which
         follows updates. (The conda block removed from ~/.zshrc was yours.)
