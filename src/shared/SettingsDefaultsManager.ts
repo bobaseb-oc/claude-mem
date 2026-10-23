@@ -401,6 +401,11 @@ export interface SettingsDefaults {
   CLAUDE_MEM_DEDUP_MAX_SCAN: string;               // cap Tier-1 candidate scan per insert (logged when hit)
   CLAUDE_MEM_DEDUP_MAX_BACKFILL_ROWS: string;      // dedup-scan safety valve: skip a project larger than this (avoids OOM)
   CLAUDE_MEM_TOOL_USES_RETENTION_DAYS: string;     // 0 = keep tool_uses forever; N = at worker start, drop rows older than N days that are linked to an observation
+  // Fork: the memory tree (src/services/memory-tree). Off unless a project is named.
+  CLAUDE_MEM_TREE_PROJECTS: string;                // '' = off; comma-separated project names, or '*' for every project
+  CLAUDE_MEM_TREE_VIEW_CHARS: string;              // chars of the SessionStart block given to the tree view
+  CLAUDE_MEM_TREE_FILE_BYTES: string;              // 0 = no view file; N = write ~/.claude-mem/views/<project>.md of up to N bytes
+  CLAUDE_MEM_TREE_BATCH: string;                   // merges asked for in one model call
   CLAUDE_MEM_WORKER_AUTOSTART: string;
   CLAUDE_MEM_PROJECT_NAME_SOURCE: string;
 }
@@ -659,6 +664,10 @@ export class SettingsDefaultsManager {
     CLAUDE_MEM_DEDUP_MAX_SCAN: '2000',                  // per-insert candidate-scan cap (logged when exceeded)
     CLAUDE_MEM_DEDUP_MAX_BACKFILL_ROWS: '50000',        // dedup-scan skips a project with more rows than this (memory safety)
     CLAUDE_MEM_TOOL_USES_RETENTION_DAYS: '0',           // 0 = keep forever (default); N = purge linked tool_uses older than N days at worker start
+    CLAUDE_MEM_TREE_PROJECTS: '',
+    CLAUDE_MEM_TREE_VIEW_CHARS: '6000',
+    CLAUDE_MEM_TREE_FILE_BYTES: '0',
+    CLAUDE_MEM_TREE_BATCH: '24',
     CLAUDE_MEM_WORKER_AUTOSTART: 'true',                    // 'false' = the worker is managed externally: hooks, the MCP server and `start` use a running worker but never launch, kill or recycle one.
     CLAUDE_MEM_PROJECT_NAME_SOURCE: 'path',                 // 'path' (default) = folder/git-root basename; 'git-remote' = stable org/repo slug from the git `origin` URL (survives directory renames). Opt-in; default preserves existing behavior.
   };
