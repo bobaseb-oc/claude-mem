@@ -1,0 +1,27 @@
+src/servers/mcp-server.ts
+  s_454786f4742370::t_48c054fb0ba65e 694-712
+  s_454786f4742370::t_78b1dd47c51d83 693
+src/services/worker/http/routes/MemoryTreeRoutes.ts
+  s_454786f4742370::t_edeeddc9c3f1d3 1-50
+src/services/worker-service.ts
+  s_454786f4742370::t_809d38f51713af 151
+  s_454786f4742370::t_8ea403f9b59609 606
+tests/memory-tree/routes.test.ts
+  s_454786f4742370::t_c1570dfbd36358 1-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c9647a9edfb0f3295e4af8cf6fb0de9c8331276e",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
