@@ -1,0 +1,24 @@
+tests/memory-tree/delete-route.test.ts
+  s_454786f4742370::t_5cf895dc391167 1-42
+src/services/sqlite/SessionStore.ts
+  s_454786f4742370::t_a8843d63aa7433 317-319
+  s_454786f4742370::t_82e8ef495d11bd 41
+src/services/worker/http/routes/DataRoutes.ts
+  s_454786f4742370::t_395469325ee745 24,479-482
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "43597da2a07ebcd5d0d69e7f2dbf0d3ce2965ada",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
