@@ -383,9 +383,11 @@ echo 'tree-sitter 0.26.9'
       "process.stdin.resume(); process.stdin.on('end', () => process.stdout.write('tree-sitter 0.26.8\\n'));",
     ].join('\n'));
     chmodSync(binaryPath, 0o755);
+    // Fork hardening H3: only a pinned executable is probed, so pin this one.
+    const pinFakeBinary = () => sha256(readFileSync(binaryPath));
 
     const startedAt = Date.now();
-    await expect(ensureTreeSitterCliBinary(tempDir, TREE_SITTER_INSTALL_TIMEOUT_MS)).resolves.toBe('already-usable');
+    await expect(ensureTreeSitterCliBinary(tempDir, TREE_SITTER_INSTALL_TIMEOUT_MS, pinFakeBinary)).resolves.toBe('already-usable');
     expect(Date.now() - startedAt).toBeLessThan(2000);
   });
 

@@ -124,6 +124,25 @@ const CONDA_FORGE_FALLBACK: GlibcCompatibleFallback = {
   download: downloadArchive,
 };
 
+/** Whether the executable at `executablePath` is one of the pinned builds for its package's version. */
+function isPinnedTreeSitterExecutable(
+  executablePath: string,
+  cliDir: string,
+  pinnedSha256ForVersion: (version: string) => string | undefined,
+  glibcFallback: GlibcCompatibleFallback,
+): boolean {
+  let version: string;
+  let actualSha256: string;
+  try {
+    version = String((JSON.parse(readFileSync(join(cliDir, "package.json"), "utf-8")) as { version?: unknown }).version);
+    actualSha256 = sha256OfFile(executablePath);
+  } catch {
+    return false;
+  }
+  const pinned = [pinnedSha256ForVersion(version), glibcFallback.buildFor(version)?.executableSha256];
+  return pinned.some((sha256) => sha256 !== undefined && sha256 === actualSha256);
+}
+
 /** The OS refused the release asset because this glibc is too old (#4758). */
 function refusedForOlderGlibc(probe: TreeSitterCliVersionProbe): boolean {
   return process.platform === "linux" && /GLIBC_\d/.test(probe.reason ?? "");
@@ -205,7 +224,15 @@ export async function ensureTreeSitterCliBinary(
     throw new Error(`tree-sitter-cli package path is not a directory: ${cliDir}`);
   }
   const existingBinaryPath = treeSitterCliBinaryPath(pluginRoot);
-  const existingProbe = await answersTreeSitterVersion(existingBinaryPath);
+  // Fork hardening H3: an executable already in place (an install script's, or
+  // anything else's) runs only once it matches a pinned SHA-256, the release
+  // asset's or the glibc-compatible build's. Otherwise it is not run, and the
+  // verified download below replaces it.
+  const existingProbe: TreeSitterCliVersionProbe = isPinnedTreeSitterExecutable(
+    existingBinaryPath, cliDir, pinnedSha256ForVersion, glibcFallback,
+  )
+    ? await answersTreeSitterVersion(existingBinaryPath)
+    : { usable: false };
   if (existingProbe.usable) return "already-usable";
 
   const installScript = join(cliDir, "install.js");

@@ -8,7 +8,10 @@ import { fileURLToPath } from 'url';
 
 const IS_WINDOWS = process.platform === 'win32';
 const VERSION_CHECK_LOG_PREFIX = '[version-check]';
-const BUN_INSTALL_ARGS = Object.freeze(['install', '--production']);
+// Fork hardening H3: exactly what plugin/bun.lock pins, and no package's
+// lifecycle script runs; the worker fetches tree-sitter's executable itself
+// and checks its pinned SHA-256 (tree-sitter-cli-provision.ts).
+const BUN_INSTALL_ARGS = Object.freeze(['install', '--production', '--frozen-lockfile', '--ignore-scripts']);
 const BUN_INSTALL_TIMEOUT_MS = 120_000;
 const NODE_MODULES_DIRNAME = 'node_modules';
 // zod ships its public API behind subpath exports that worker-service.cjs

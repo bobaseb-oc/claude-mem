@@ -4,7 +4,6 @@ import { getSupervisor } from '../../supervisor/index.js';
 import { logger } from '../../utils/logger.js';
 import {
   ensureTreeSitterCliBinary,
-  isTreeSitterCliBinaryUsable,
   type GlibcCompatibleFallback,
 } from '../smart-file-read/tree-sitter-cli-provision.js';
 import { pinnedTreeSitterExecutableSha256 } from '../smart-file-read/tree-sitter-cli-checksums.js';
@@ -30,10 +29,12 @@ export async function provisionTreeSitterCliForPluginRoot(
   glibcFallback?: GlibcCompatibleFallback,
 ): Promise<TreeSitterCliProvisioningOutcome> {
   if (!existsSync(join(pluginRoot, 'node_modules', 'tree-sitter-cli', 'install.js'))) return 'no-package';
-  if (await isTreeSitterCliBinaryUsable(pluginRoot)) return 'already-usable';
+  // Fork hardening H3: no `--version` probe here. ensureTreeSitterCliBinary
+  // runs an executable already in place only once its SHA-256 is a pinned one,
+  // and downloads a verified one otherwise.
   getSupervisor().assertCanSpawn('tree-sitter cli install');
-  logger.info('SYSTEM', 'Downloading the tree-sitter CLI for smart_search, smart_outline and smart_unfold', { pluginRoot });
   const source = await ensureTreeSitterCliBinary(pluginRoot, TREE_SITTER_CLI_INSTALL_TIMEOUT_MS, pinnedSha256ForVersion, glibcFallback);
+  if (source === 'already-usable') return 'already-usable';
   logger.info('SYSTEM', source === 'glibc-compatible'
     ? 'tree-sitter CLI provisioned from the glibc-compatible conda-forge build (the release asset needs a newer glibc)'
     : 'tree-sitter CLI provisioned', { pluginRoot });
