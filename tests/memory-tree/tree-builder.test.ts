@@ -107,6 +107,15 @@ describe('TreeBuilder', () => {
   });
 });
 
+it('calls afterProject for each enabled project it passed over', async () => {
+  addObservation('p', 'a', 1);
+  addObservation('q', 'b', 1);
+  const seen: string[] = [];
+  const builder = new TreeBuilder({ db: () => db, runPrompt: echoModel, settings: () => ({ projects: 'p', batch: 24 }), afterProject: (_db, project) => seen.push(project) });
+  await builder.tick();
+  expect(seen).toEqual(['p']);
+});
+
 it('indexes leaves for an enabled project even before anything is mergeable', async () => {
   addObservation('p', 'only one', 1);
   const builder = new TreeBuilder({ db: () => db, runPrompt: echoModel, settings: () => ({ projects: '*', batch: 24 }) });

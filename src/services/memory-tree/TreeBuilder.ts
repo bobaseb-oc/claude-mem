@@ -20,6 +20,8 @@ export interface TreeBuilderDeps {
   runPrompt: (prompt: string, project: string) => Promise<string | null>;
   settings: () => { projects: string; batch: number };
   now?: () => number;
+  /** After each enabled project's pass (the view file is rewritten here). */
+  afterProject?: (db: Database, project: string) => void;
 }
 
 /** Entries are data: '<' is escaped so none can close its tag or open another. */
@@ -104,6 +106,11 @@ export class TreeBuilder {
           logger.error('MEMORY_TREE', 'Merge call answered no usable line; pausing', { project, merges: merges.length });
           return built;
         }
+      }
+      try {
+        this.deps.afterProject?.(db, project);
+      } catch (error) {
+        logger.error('MEMORY_TREE', 'After-pass step failed', { project }, error instanceof Error ? error : new Error(String(error)));
       }
     }
     if (built > 0) logger.info('MEMORY_TREE', 'Built tree nodes', { built, calls });

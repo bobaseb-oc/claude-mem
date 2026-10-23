@@ -117,6 +117,7 @@ import { SessionManager } from './worker/SessionManager.js';
 import { SSEBroadcaster } from './worker/SSEBroadcaster.js';
 import { ClaudeProvider, classifyClaudeError } from './worker/ClaudeProvider.js';
 import { TreeBuilder } from './memory-tree/TreeBuilder.js';
+import { writeViewFile } from './memory-tree/view-file.js';
 import type { WorkerRef } from './worker/agents/types.js';
 import { GeminiProvider, classifyGeminiError } from './worker/GeminiProvider.js';
 import { OpenRouterProvider, classifyOpenRouterError } from './worker/OpenRouterProvider.js';
@@ -510,6 +511,10 @@ export class WorkerService implements WorkerRef {
       settings: () => {
         const settings = SettingsDefaultsManager.loadFromFile(USER_SETTINGS_PATH);
         return { projects: settings.CLAUDE_MEM_TREE_PROJECTS, batch: Number.parseInt(settings.CLAUDE_MEM_TREE_BATCH, 10) || 24 };
+      },
+      afterProject: (db, project) => {
+        const bytes = Number.parseInt(SettingsDefaultsManager.loadFromFile(USER_SETTINGS_PATH).CLAUDE_MEM_TREE_FILE_BYTES, 10) || 0;
+        writeViewFile(db, project, path.join(DATA_DIR, 'views'), bytes);
       },
     });
     this.memoryTreeTimer = setInterval(() => {
