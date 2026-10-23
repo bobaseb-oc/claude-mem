@@ -1,0 +1,49 @@
+.claude-plugin/marketplace.json
+  s_454786f4742370::t_3cdb8f6176dc04 12
+.claude-plugin/plugin.json
+  s_454786f4742370::t_444272355bbeb6 3
+.codex-plugin/plugin.json
+  s_454786f4742370::t_392cdf95389abc 3
+.qoder-plugin/plugin.json
+  s_454786f4742370::t_0712cd033bd7fc 3
+claude-mem-cursor/.cursor-plugin/plugin.json
+  s_454786f4742370::t_69347eae5cf72e 3
+claude-mem-grok-bot/.cursor-plugin/plugin.json
+  s_454786f4742370::t_deaebb1e5fedc1 3
+dsh/package.json
+  s_454786f4742370::t_f7915b4065ebd1 3
+package.json
+  s_454786f4742370::t_00bd9ceaecabd3 3
+plugin/.claude-plugin/plugin.json
+  s_454786f4742370::t_a10042edadffcd 3
+plugin/.codex-plugin/plugin.json
+  s_454786f4742370::t_6916fdaf612aec 3
+plugin/.qoder-plugin/plugin.json
+  s_454786f4742370::t_5a26deb95a29bd 3
+plugin/package.json
+  s_454786f4742370::t_4539044b6b3407 3
+plugin/scripts/mcp-server.cjs
+  s_454786f4742370::t_6f2e59114c6dd2 26,351
+plugin/scripts/server-service.cjs
+  s_454786f4742370::t_590ecd4363713e 69,500
+plugin/scripts/transcript-watcher.cjs
+  s_454786f4742370::t_777934ad64ba12 20
+plugin/scripts/worker-service.cjs
+  s_454786f4742370::t_88ceed2ae6093b 92,531,702,1061,2980,3471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "92ba78d3b5010ad7c1498edf5d26760bb3b99d53",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
