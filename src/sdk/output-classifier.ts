@@ -244,6 +244,29 @@ export function isOrgDisabledSubscriptionObserverOutput(raw: unknown): boolean {
 }
 
 /**
+ * Fork: detect the provider (or a gateway in front of it) refusing the
+ * observer's MODEL, not its credential: a LiteLLM-style "team not allowed to
+ * access model" 403, Anthropic's "does not have access to model", or a 404 for
+ * an unknown model. The auth detector books the 403s as a signed-out observer,
+ * but /login cannot fix them; the observer model has to change. Requires the
+ * CLI's API-error framing, so an observation that merely talks about model
+ * access never matches.
+ */
+export function isModelAccessDeniedObserverOutput(raw: unknown): boolean {
+  if (typeof raw !== 'string' || raw.trim() === '') {
+    return false;
+  }
+
+  const text = raw.toLowerCase().replace(/\s+/g, ' ');
+  if (!/\bapi error\s*:?\s*(?:403|404)\b/.test(text)) return false;
+
+  return /\bnot allowed to access model\b/.test(text) ||
+    /\bteam_model_access/.test(text) ||
+    /\bdoes not have access to (?:the )?model\b/.test(text) ||
+    /\bnot_found_error\b.{0,80}"model: /.test(text);
+}
+
+/**
  * Detect provider authentication-failure prose so claimed work can be retried
  * after the user restores provider authentication.
  */

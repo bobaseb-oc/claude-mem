@@ -461,7 +461,8 @@ export async function startGeneratorWithProvider(
       // the primary is held. A Claude primary keeps retrying on the next event.
       const claudeStandInSignedOut = provider === 'claude' && !failureBooked
         && (session.fallbackFrom != null || session.claudeAuthOverride != null)
-        && (reason === 'auth:observer_text' || reason === 'auth:observer_org_policy');
+        && (reason === 'auth:observer_text' || reason === 'auth:observer_org_policy'
+          || reason === 'auth:observer_model_access');
       if (claudeStandInSignedOut) {
         recordAuthCooldown('claude', 'Claude Code reported the fallback observer as signed out', session.observerProfile);
       }
@@ -473,6 +474,15 @@ export async function startGeneratorWithProvider(
           message: 'Your organization has disabled Claude subscription access for Claude Code',
           kind: 'auth_invalid',
           action: 'Set ANTHROPIC_API_KEY in ~/.claude-mem/.env, or ask your organization admin to enable subscription access',
+        });
+      }
+      // Fork: a refused observer model goes down the same preserved auth path,
+      // and logging in again cannot lift it either: the model has to change.
+      if (reason === 'auth:observer_model_access' && !failureBooked) {
+        recordObserverFailure(provider, {
+          message: `The observer model${session.lastModelId ? ` (${session.lastModelId})` : ''} is not allowed for this account, so no memory is being saved`,
+          kind: 'auth_invalid',
+          action: 'Set CLAUDE_MEM_MODEL (and CLAUDE_MEM_TIER_SMART_MODEL if tier routing is on) in ~/.claude-mem/settings.json to a model your account allows, then restart the worker',
         });
       }
       if (reason !== null) {

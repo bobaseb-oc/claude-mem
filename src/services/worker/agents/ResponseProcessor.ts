@@ -6,6 +6,7 @@ import {
   classifyObserverOutput,
   isAuthFailureObserverOutput,
   isContextOverflowObserverOutput,
+  isModelAccessDeniedObserverOutput,
   isOrgDisabledSubscriptionObserverOutput,
   isQuotaLimitedObserverOutput,
   isTransportFailureObserverOutput,
@@ -471,6 +472,29 @@ export async function processAgentResponse(
         // best-effort; AbortController.abort() should not throw in normal use.
       }
       worker?.broadcastProcessingStatus?.();
+      return null;
+    }
+
+    // Fork: the provider (or a gateway) refused the observer's model. Checked
+    // before the auth detector, which books its 403 as signed out: logging in
+    // again cannot fix this, so the batch is preserved and the remedy names
+    // the model setting.
+    if (isModelAccessDeniedObserverOutput(text)) {
+      await sessionManager.resetProcessingToPending(session.sessionDbId);
+      session.abortReason = 'auth:observer_model_access';
+      try {
+        session.abortController.abort();
+      } catch {
+        // best-effort; AbortController.abort() should not throw in normal use.
+      }
+      worker?.broadcastProcessingStatus?.();
+      worker?.recordAiInteraction?.({ success: false, error: 'model_access_denied', provider: providerName });
+      logger.error('PARSER', `${agentName} refused: the observer model is not allowed for this account; set CLAUDE_MEM_MODEL to an allowed model; queued batch preserved`, {
+        sessionId: session.sessionDbId,
+        outputClass: 'prose',
+        remediation: 'set_model',
+        preview: previewOutput(text),
+      });
       return null;
     }
 

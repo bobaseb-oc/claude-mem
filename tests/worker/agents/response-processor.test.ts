@@ -1704,6 +1704,44 @@ describe('ResponseProcessor', () => {
       expect(confirmClaimedMessages).not.toHaveBeenCalled();
       expect(session.abortReason).toBe('auth:observer_org_policy');
     });
+
+    // Fork: a gateway refusing the observer's model is booked apart from a
+    // signed-out observer, because /login cannot fix it; the model must change.
+    it('preserves the batch on a refused model with its own abort reason and remedy', async () => {
+      const confirmClaimedMessages = mock(async () => 0);
+      const resetProcessingToPending = mock(async () => 1);
+      const mockSessionManager = {
+        getMessageIterator: async function* () { yield* []; },
+        getPendingMessageStore: () => ({ markProcessed: mock(() => {}) }),
+        confirmClaimedMessages,
+        resetProcessingToPending,
+      } as unknown as SessionManager;
+      const session = createMockSession();
+      const errorSpy = spyOn(logger, 'error').mockImplementation(() => {});
+
+      try {
+        await processAgentResponse(
+          'Failed to authenticate. API Error: 403 {"error":{"message":"team not allowed to access model. Tried to access claude-sonnet-4-6","type":"team_model_access_denied"}}',
+          session,
+          mockDbManager,
+          mockSessionManager,
+          mockWorker,
+          100,
+          null,
+          'TestAgent'
+        );
+
+        expect(resetProcessingToPending).toHaveBeenCalledWith(1);
+        expect(confirmClaimedMessages).not.toHaveBeenCalled();
+        expect(session.abortReason).toBe('auth:observer_model_access');
+        const [, message, details] = errorSpy.mock.calls.at(-1) as [string, string, Record<string, unknown>];
+        expect(message).toContain('model');
+        expect(message).not.toContain('/login');
+        expect(details.remediation).toBe('set_model');
+      } finally {
+        errorSpy.mockRestore();
+      }
+    });
   });
   describe('lastSummaryStored tracking (#1633)', () => {
     it('should set lastSummaryStored=true when storage returns a summaryId', async () => {
