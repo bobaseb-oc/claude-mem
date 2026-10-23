@@ -21,6 +21,7 @@ import { normalizePlatformSource } from '../../../../shared/platform-source.js';
 import { getObservationsByFilePath } from '../../../sqlite/observations/get.js';
 import { getFirstObservationCreatedAt } from '../../../sqlite/observations/recent.js';
 import { deleteToolUsesOfRow } from '../../../sqlite/tool-uses.js';
+import { deleteTreeOfRow } from '../../../memory-tree/MemoryTree.js';
 import { getParkedSlotWaiterCount } from '../../../../supervisor/process-registry.js';
 import { getUptimeSeconds } from '../../../../shared/uptime.js';
 import { assertCanonicalDecimal, type ContentKind } from '../../../sync/CanonicalContent.js';
@@ -475,6 +476,10 @@ export class DataRoutes extends BaseRouteHandler {
     // Fork hardening H5: the row's raw tool I/O goes first, on either path
     // (tool_uses is local-only, never synced, so a queued delete need not wait).
     deleteToolUsesOfRow(store.db, table, originLocalId);
+    // Fork: and every memory-tree summary above it, rebuilt without it.
+    if (table !== 'session_summaries') {
+      deleteTreeOfRow(store.db, table === 'observations' ? 'observation' : 'prompt', originLocalId);
+    }
     if (cloudSync?.isConfigured()) {
       return cloudSync.queueDelete(kind, originLocalId);
     }

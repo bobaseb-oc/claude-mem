@@ -38,6 +38,7 @@ import {
   type WorkStateEntry,
   type WorkStateFields,
 } from './work-state.js';
+import { createMemoryTreeSchema } from '../memory-tree/MemoryTree.js';
 import { SettingsDefaultsManager, type SettingsDefaults } from '../../shared/SettingsDefaultsManager.js';
 import {
   computeTitleNormKey, findTier0Canonical, bumpTokenDf, isFuzzyReady, recordTier1Candidates,
@@ -313,6 +314,9 @@ export class SessionStore {
     this.ensureProjectRecencyIndexes();
     this.ensureMergedIntoProjectCoveringIndexes();
     this.ensureNativePromptIdentity();
+    // Fork: the memory tree's tables. A rebuildable cache, so idempotent DDL
+    // and no schema_versions stamp: an older build keeps opening this database.
+    createMemoryTreeSchema(this.db);
   }
 
   /** Local host retry identity. Runs after every legacy user_prompts rebuild. */
