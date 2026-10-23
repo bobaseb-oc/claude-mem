@@ -3,8 +3,10 @@ import path from 'path';
 import { homedir } from 'os';
 import { existsSync, unlinkSync } from 'fs';
 import { Database } from 'bun:sqlite';
-import { DB_PATH } from '../../shared/paths.js';
+import { DB_PATH, USER_SETTINGS_PATH } from '../../shared/paths.js';
 import { logger } from '../../utils/logger.js';
+import { SettingsDefaultsManager } from '../../shared/SettingsDefaultsManager.js';
+import { treeContextSection } from '../memory-tree/context-section.js';
 import { getProjectContext } from '../../utils/project-name.js';
 import { normalizePlatformSource } from '../../shared/platform-source.js';
 import { SQLITE_BUSY_TIMEOUT_MS } from '../sqlite/connection.js';
@@ -564,6 +566,21 @@ export async function generateServerSessionStartContext(
   };
 }
 
+/** Fork: the tree section for this project, or '' (off, nothing built, or tables not created yet). Never throws. */
+function memoryTreeSectionFor(db: Database, project: string): string {
+  try {
+    const settings = SettingsDefaultsManager.loadFromFile(USER_SETTINGS_PATH);
+    return treeContextSection(db, project, {
+      projects: settings.CLAUDE_MEM_TREE_PROJECTS,
+      viewChars: Number.parseInt(settings.CLAUDE_MEM_TREE_VIEW_CHARS, 10) || 6000,
+    });
+  } catch (error) {
+    logger.debug('MEMORY_TREE', 'No tree section for the SessionStart block', { project },
+      error instanceof Error ? error : new Error(String(error)));
+    return '';
+  }
+}
+
 export async function generateContextWithStats(
   input?: ContextInput,
   forHuman: boolean = false,
@@ -596,7 +613,12 @@ export async function generateContextWithStats(
     const queryProjects = projectReadKeys(rawDb, scope.projects.length > 1 ? scope.projects : [scope.project]);
     const observations = queryObservationsMulti(db, queryProjects, scope.config, scope.platformSource);
     const summaries = querySummariesMulti(db, queryProjects, scope.config, scope.platformSource);
-    return { ...renderContextFromRows({ observations, summaries }, input, forHuman, scope), readKeys: queryProjects };
+    // Fork: the memory tree section, when CLAUDE_MEM_TREE_PROJECTS names this
+    // project. Its length is reserved first, so upstream's block fits the rest.
+    const tree = input?.full ? '' : memoryTreeSectionFor(rawDb, scope.project);
+    const treeInput = tree ? { ...input, reserveChars: (input?.reserveChars ?? 0) + tree.length + 2 } : input;
+    const rendered = renderContextFromRows({ observations, summaries }, treeInput, forHuman, scope);
+    return { ...rendered, text: tree ? `${rendered.text}\n\n${tree}` : rendered.text, readKeys: queryProjects };
   } finally {
     rawDb.close();
   }

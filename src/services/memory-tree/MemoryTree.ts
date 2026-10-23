@@ -209,12 +209,14 @@ export function renderTreeView(db: Database, project: string, budgetChars: numbe
   let total = cost(parts);
   // Never more than the budget: drop the oldest lines (only before a backfill
   // has built the upper levels can the coarsest cover be too long).
+  const OLDER_NOTE = '- (older history not summarized yet)';
   let droppedOld = false;
-  while (total > budgetChars && parts.length > 1) {
+  while (total + (droppedOld ? OLDER_NOTE.length + 1 : 0) > budgetChars && parts.length > 1) {
     total -= line(parts[0]).length + 1;
     parts = parts.slice(1);
     droppedOld = true;
   }
+  if (droppedOld) total += OLDER_NOTE.length + 1;
 
   for (;;) {
     let split = -1;
@@ -235,7 +237,7 @@ export function renderTreeView(db: Database, project: string, budgetChars: numbe
   }
 
   const lines = parts.map(line);
-  if (droppedOld) lines.unshift('- (older history not summarized yet)');
+  if (droppedOld) lines.unshift(OLDER_NOTE);
   return lines.join('\n');
 }
 
