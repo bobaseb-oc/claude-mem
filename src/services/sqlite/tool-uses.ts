@@ -547,3 +547,29 @@ export function purgeLinkedToolUses(db: Database, retentionDays: number, nowEpoc
     return 0;
   }
 }
+
+/**
+ * Fork hardening H5: deleting one observation or prompt also deletes the raw
+ * tool I/O behind it: the tool uses linked to the observation, or the tool
+ * uses of the prompt's turn (same content session and prompt number). Runs
+ * before the row itself goes, since a prompt's turn is read from its row. A
+ * failure throws, so the delete fails rather than reporting success with the
+ * raw I/O still readable. Summaries have no tool uses of their own.
+ *
+ * Returns the number of rows removed.
+ */
+export function deleteToolUsesOfRow(
+  db: Database,
+  table: 'observations' | 'session_summaries' | 'user_prompts',
+  rowId: string,
+): number {
+  if (table === 'session_summaries' || !toolUsesTableExists(db)) return 0;
+  const { changes } = table === 'observations'
+    ? db.prepare('DELETE FROM tool_uses WHERE observation_id = ?').run(rowId)
+    : db.prepare(
+      `DELETE FROM tool_uses
+        WHERE (content_session_id, prompt_number) =
+              (SELECT content_session_id, prompt_number FROM user_prompts WHERE id = ?)`
+    ).run(rowId);
+  return changes;
+}
