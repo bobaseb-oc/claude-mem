@@ -1,0 +1,29 @@
+src/services/worker/http/routes/SettingsRoutes.ts
+  s_454786f4742370::t_142b4fba2d77ff 121-127,132-141
+tests/worker/http/routes/settings-routes-fork-file-only.test.ts
+  s_454786f4742370::t_9bb59c2fb8984c 49
+  s_454786f4742370::t_65a6b63df6a032 1-2,5-48,50-81
+  s_454786f4742370::t_abfc379b2b59e7 3-4
+tests/worker/http/routes/settings-routes-cmem-key-lock.test.ts
+  s_454786f4742370::t_1176415cb6df1c 73-80,137-140,145-146,169,177-180
+tests/worker/http/routes/settings-routes-config-dir.test.ts
+  s_454786f4742370::t_f363f8c529433d 70-72,81
+tests/worker/http/routes/settings-routes-quota-fallback.test.ts
+  s_454786f4742370::t_bc6db979fcb4dd 60-62,69,73-75,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0a75dfee188ce635bafaf29a40fde6adddfb5a29",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
