@@ -105,7 +105,7 @@ for (const { oldStatus, emptySource, startupDelayMs = 0 } of [
       return new Response('Not found', { status: 404 });
     } });
     const profile = mkdtempSync(join(tmpdir(), 'claude-mem-preview-browser-'));
-    const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--no-first-run', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
+    const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--no-first-run', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
     let timeout: ReturnType<typeof setTimeout>;
     try {
       // Chrome startup is independent of the rendered fixture's six-second race.

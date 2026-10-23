@@ -81,7 +81,7 @@ const chrome = Bun.which('google-chrome') ?? Bun.which('chromium')
       if (path === '/result') { report(await request.json()); return new Response('received'); }
       return new Response('not found', { status: 404 });
     } });
-    child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu',
+    child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu',
       '--disable-background-networking', '--no-first-run', `--user-data-dir=${profile}`, server.url.href],
       { stdout: 'ignore', stderr: 'ignore' });
     const received = await Promise.race([result, new Promise(resolve => {

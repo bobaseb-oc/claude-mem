@@ -91,7 +91,7 @@ for (const [scenario, slow] of [['first-page', false], ['older-page', false], ['
         return new Response('not found',{status:404});
       }});
       timeout=setTimeout(()=>report({failure:'Chrome startup timed out'}),30000);
-      child=Bun.spawn([chrome!,'--headless','--no-sandbox','--disable-gpu','--disable-background-networking',
+      child=Bun.spawn([chrome!,'--headless','--use-mock-keychain','--password-store=basic','--no-sandbox','--disable-gpu','--disable-background-networking',
         '--disable-background-timer-throttling','--disable-renderer-backgrounding','--no-first-run',`--user-data-dir=${join(owned,'browser')}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
       const received=await result;
       expect(received).toEqual({before:scenario==='first-page'?1:2,hasRetry:true,recovered:true,names:scenario==='older-page'?['Seed','Recovered']:['Recovered']});

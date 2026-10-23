@@ -180,7 +180,7 @@ for (const consumer of ['hook', 'app']) {
         return Response.json({});
       } });
       const profile = mkdtempSync(join(tmpdir(), 'claude-mem-committed-feed-'));
-      const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--no-first-run', '--window-size=800,600', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
+      const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--no-first-run', '--window-size=800,600', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
       let timeout: ReturnType<typeof setTimeout> | undefined;
       async function deadline<T>(promise: Promise<T>, milliseconds: number): Promise<T> {
         try { return await Promise.race([promise, new Promise<T>((_, reject) => { timeout = setTimeout(() => reject(new Error('Owned browser deadline exceeded')), milliseconds); })]); }

@@ -84,7 +84,7 @@ for (const mode of ['more', 'exhausted', 'loading'] as const) {
       return new Response('not found', { status: 404 });
     } });
     const profile = mkdtempSync(join(tmpdir(), 'claude-mem-empty-filter-browser-'));
-    const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu',
+    const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu',
       '--disable-background-networking', '--no-first-run', `--user-data-dir=${profile}`, server.url.href],
       { stdout: 'ignore', stderr: 'ignore' });
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -179,7 +179,7 @@ for (const mode of ['more', 'exhausted', 'loading'] as const) {
     return new Response('not found', { status: 404 });
   } });
   const profile = mkdtempSync(join(tmpdir(), 'claude-mem-late-sentinel-browser-'));
-  const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu',
+  const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu',
     '--disable-background-networking', '--no-first-run', `--user-data-dir=${profile}`, server.url.href],
     { stdout: 'ignore', stderr: 'ignore' });
   let timeout: ReturnType<typeof setTimeout> | undefined;

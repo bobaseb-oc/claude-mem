@@ -106,7 +106,7 @@ for (const scenario of ['partial', 'empty-timeline', 'empty-session']) {
       return Response.json({});
     } });
     const profile = mkdtempSync(join(tmpdir(), 'claude-mem-pagination-browser-'));
-    const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--no-first-run', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
+    const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--no-first-run', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
     let timeout: ReturnType<typeof setTimeout>;
     try {
       // Separate Chrome startup from the two rendered-page settlement phases.

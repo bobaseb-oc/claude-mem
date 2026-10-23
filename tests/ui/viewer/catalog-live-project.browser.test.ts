@@ -38,7 +38,7 @@ if (process.env.CI && !chrome) throw new Error('CI requires Chrome for native vi
     return Response.json({sessions:[],hasMore:false});
   }});
   const profile=mkdtempSync(join(tmpdir(),'cm-catalog-project-'));
-  const child=Bun.spawn([chrome!,'--headless','--no-sandbox','--disable-gpu','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--no-first-run',`--user-data-dir=${profile}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
+  const child=Bun.spawn([chrome!,'--headless','--use-mock-keychain','--password-store=basic','--no-sandbox','--disable-gpu','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--no-first-run',`--user-data-dir=${profile}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
   let timeout: ReturnType<typeof setTimeout>;
   try { const reported=await Promise.race([result,new Promise(resolve=>{timeout=setTimeout(()=>resolve({failure:'Browser timed out'}),45000);})]);
     expect(reported).toEqual({filtered:['alpha'],itemCount:2,all:['beta']});

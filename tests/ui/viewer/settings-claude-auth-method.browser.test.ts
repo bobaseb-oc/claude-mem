@@ -48,7 +48,7 @@ if (process.env.CI && !chrome) {
       return new Response('<style>' + styles + '</style><div id="root"></div><script src="/fixture.js"></script>', { headers: { 'Content-Type': 'text/html' } });
     } });
     const profile = mkdtempSync(join(tmpdir(), 'claude-mem-auth-method-'));
-    const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu',
+    const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu',
       '--disable-background-networking', '--no-first-run', '--remote-debugging-port=0',
       `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
     let socket: WebSocket | undefined;

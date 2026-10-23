@@ -24,7 +24,7 @@ function compileFixture(source: string): string {
 
 // The page's 5 s abort timers must fire on time on a loaded runner.
 function spawnChrome(profile: string, url: string) {
-  return Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking',
+  return Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu', '--disable-background-networking',
     '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--no-first-run',
     `--user-data-dir=${profile}`, url], { stdout: 'ignore', stderr: 'ignore' });
 }

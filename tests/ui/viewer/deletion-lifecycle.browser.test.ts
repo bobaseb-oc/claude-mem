@@ -138,7 +138,7 @@ for(const scenario of ['item','recreated-visible','recreated-session','late-dele
         if(url.pathname==='/result'){finish(await request.json());return new Response('received')}
         return Response.json({});
       }});
-      child=Bun.spawn([chrome!,'--headless','--no-sandbox','--disable-gpu','--disable-background-networking',
+      child=Bun.spawn([chrome!,'--headless','--use-mock-keychain','--password-store=basic','--no-sandbox','--disable-gpu','--disable-background-networking',
         '--disable-background-timer-throttling','--disable-renderer-backgrounding',
         '--no-first-run',`--user-data-dir=${join(owned,'browser')}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
       // Chrome's cold start gets its own window; the page's phases start at /ready.

@@ -97,7 +97,7 @@ const chrome = Bun.which('google-chrome') ?? Bun.which('chromium')
     return Response.json({});
   } });
   const profile = mkdtempSync(join(tmpdir(), 'claude-mem-stale-feed-'));
-  const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--no-first-run', '--window-size=800,600', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
+  const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--no-first-run', '--window-size=800,600', `--user-data-dir=${profile}`, server.url.href], { stdout: 'ignore', stderr: 'ignore' });
   let timeout: ReturnType<typeof setTimeout>;
   try {
     const reported = await Promise.race([result, new Promise(resolve => { timeout = setTimeout(() => resolve({ failure: 'Browser timed out' }), 25000); })]);

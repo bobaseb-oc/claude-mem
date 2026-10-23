@@ -72,7 +72,7 @@ for (const stalled of ['post', 'health', 'health-body', 'readiness', 'no-success
       await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
       const address=server.address();
       if(!address||typeof address==='string')throw Error('No native TCP address');
-      child=Bun.spawn([chrome!,'--headless','--no-sandbox','--disable-gpu','--disable-background-networking',
+      child=Bun.spawn([chrome!,'--headless','--use-mock-keychain','--password-store=basic','--no-sandbox','--disable-gpu','--disable-background-networking',
         '--disable-background-timer-throttling','--disable-renderer-backgrounding',
         '--no-first-run',`--user-data-dir=${join(owned,'browser')}`,`http://127.0.0.1:${address.port}/restart`],
         {stdout:'ignore',stderr:'ignore'});

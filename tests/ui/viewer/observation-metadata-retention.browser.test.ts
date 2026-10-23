@@ -39,7 +39,7 @@ if (process.env.CI && !chrome) throw new Error('CI requires Chrome or Chromium f
     return new Response('',{status:404});
   }});
   const profile=mkdtempSync(join(tmpdir(),'cm-metadata-browser-'));
-  const child=Bun.spawn([chrome!,'--headless','--no-sandbox','--disable-gpu','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--no-first-run',`--user-data-dir=${profile}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
+  const child=Bun.spawn([chrome!,'--headless','--use-mock-keychain','--password-store=basic','--no-sandbox','--disable-gpu','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--no-first-run',`--user-data-dir=${profile}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const observed=await Promise.race([result,new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error('Owned browser timed out')),30000);})]);

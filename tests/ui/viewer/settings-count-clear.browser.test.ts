@@ -72,7 +72,7 @@ const COUNT_FIELDS = [
   const server = app.listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.once('listening', resolve));
   const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/`;
-  const child = Bun.spawn([chrome!, '--headless', '--no-sandbox', '--disable-gpu',
+  const child = Bun.spawn([chrome!, '--headless', '--use-mock-keychain', '--password-store=basic', '--no-sandbox', '--disable-gpu',
     '--disable-background-networking', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
     '--no-first-run', '--remote-debugging-port=0', `--user-data-dir=${profile}`, url], { stdout: 'ignore', stderr: 'ignore' });
   let socket: WebSocket | undefined;

@@ -158,7 +158,7 @@ for (const scenario of ['stale', 'fresh', 'placeholder', 'removed', 'overlap', '
       return new Response('<div id="root"></div><script src="/fixture.js"></script>',{headers:{'Content-Type':'text/html'}});
     }});
     const profile=mkdtempSync(join(tmpdir(),'claude-mem-catalog-count-'));
-    const child=Bun.spawn([chrome!,'--headless','--no-sandbox','--disable-gpu','--disable-background-networking',
+    const child=Bun.spawn([chrome!,'--headless','--use-mock-keychain','--password-store=basic','--no-sandbox','--disable-gpu','--disable-background-networking',
       '--disable-background-timer-throttling','--disable-renderer-backgrounding',
       '--no-first-run',`--user-data-dir=${profile}`,server.url.href],{stdout:'ignore',stderr:'ignore'});
     let timer:ReturnType<typeof setTimeout>|undefined;
