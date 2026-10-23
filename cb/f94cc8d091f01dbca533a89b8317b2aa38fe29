@@ -1,0 +1,23 @@
+tests/cli/adapters/claude-code-session-start.test.ts
+  s_454786f4742370::t_6e1b03690e606a 4,39-40
+tests/memory/memory-hook-transport.test.ts
+  s_454786f4742370::t_c9681e8001c7af 88-89
+tests/worker/codex-gateway-key-lock.test.ts
+  s_454786f4742370::t_e23c844baa994c 88-92,97-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cbf94cc8d091f01dbca533a89b8317b2aa38fe29",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
