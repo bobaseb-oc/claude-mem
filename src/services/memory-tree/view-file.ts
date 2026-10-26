@@ -22,11 +22,14 @@ export function viewFilePath(directory: string, project: string): string {
 
 /**
  * Whether a CLAUDE.local.md at `cwd` or a directory above it imports this
- * project's view file, so the SessionStart hook can leave its own tree
- * section out there (and only there).
+ * project's view file, and that file is written, so the session loads the tree
+ * from it and the SessionStart hook can leave its own section out there (and
+ * only there). Until the first build pass writes the file, the hook shows it.
  */
 export function viewFileImported(cwd: string, directory: string, project: string): boolean {
-  const name = basename(viewFilePath(directory, project));
+  const viewFile = viewFilePath(directory, project);
+  if (!existsSync(viewFile)) return false;
+  const name = basename(viewFile);
   let current = resolve(cwd);
   for (let depth = 0; depth < 12; depth++) {
     const file = join(current, 'CLAUDE.local.md');
