@@ -107,6 +107,17 @@ describe('TreeBuilder', () => {
   });
 });
 
+it("skips a blank project name, even with '*'", async () => {
+  addObservation('', 'no project', 1);
+  addObservation('', 'no project either', 2);
+  addObservation('p', 'a', 1);
+  const seen: string[] = [];
+  const builder = new TreeBuilder({ db: () => db, runPrompt: echoModel, settings: () => ({ projects: '*', batch: 24 }), afterProject: (_db, project) => seen.push(project) });
+  await builder.tick();
+  expect(seen).toEqual(['p']);
+  expect(leafCount(db, '')).toBe(0);
+});
+
 it('calls afterProject for each enabled project it passed over', async () => {
   addObservation('p', 'a', 1);
   addObservation('q', 'b', 1);

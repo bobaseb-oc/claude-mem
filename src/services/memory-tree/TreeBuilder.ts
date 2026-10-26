@@ -77,7 +77,8 @@ export class TreeBuilder {
 
     const enabled = parseTreeProjects(setting);
     const projects = (db.prepare(`SELECT project FROM observations UNION SELECT project FROM sdk_sessions`).all() as Array<{ project: string }>)
-      .map(row => row.project).filter(enabled);
+      // A blank project (sessions stored without one) is no project's history.
+      .map(row => row.project).filter(project => Boolean(project?.trim()) && enabled(project));
 
     let built = 0;
     let calls = 0;
