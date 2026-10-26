@@ -1,0 +1,29 @@
+src/services/memory-tree/view-file.ts
+  s_454786f4742370::t_3e4a29d5b67652 25-27,30-32
+tests/memory-tree/view-file-imported.test.ts
+  s_464497dbab13a4::t_72a037b9bcb6f8 11,13-19,22-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "45033e7d21aedb443e3d2bc98a3f51f573f0823d",
+  "prompts": {},
+  "sessions": {
+    "s_454786f4742370": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8dcd0152-5a85-4b73-8553-3de6d6d315fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    },
+    "s_464497dbab13a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41f5ae5d-7f26-461e-9010-a7ca42d583a9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
