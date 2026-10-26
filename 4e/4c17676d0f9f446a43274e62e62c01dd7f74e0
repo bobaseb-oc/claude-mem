@@ -1,0 +1,59 @@
+.claude-plugin/marketplace.json
+  s_464497dbab13a4::t_ecad13b745e08d 12
+.claude-plugin/plugin.json
+  s_464497dbab13a4::t_00859dfc3cb909 3
+.codex-plugin/plugin.json
+  s_464497dbab13a4::t_051341436fe44f 3
+.qoder-plugin/plugin.json
+  s_464497dbab13a4::t_7a0f8647fce704 3
+claude-mem-cursor/.cursor-plugin/plugin.json
+  s_464497dbab13a4::t_73cd54863a90b2 3
+claude-mem-grok-bot/.cursor-plugin/plugin.json
+  s_464497dbab13a4::t_514824361c8dcc 3
+dsh/package.json
+  s_464497dbab13a4::t_925603268ccf03 3
+package.json
+  s_464497dbab13a4::t_5e003956533bb2 3
+plugin/.claude-plugin/plugin.json
+  s_464497dbab13a4::t_2390ddcb3e57dd 3
+plugin/.codex-plugin/plugin.json
+  s_464497dbab13a4::t_72c29ce20c735a 3
+plugin/.qoder-plugin/plugin.json
+  s_464497dbab13a4::t_591904bab0f311 3
+plugin/package.json
+  s_464497dbab13a4::t_097ba24f312b5f 3
+plugin/scripts/context-generator.cjs
+  s_464497dbab13a4::t_65f6d9aaf07e11 3,5,11,13-14,18,106,109,124-127,144
+plugin/scripts/context-generator.cjs.map
+  s_464497dbab13a4::t_4ff1460366278b 4-5
+plugin/scripts/context-read-worker.cjs
+  s_464497dbab13a4::t_147b981756df3b 4,6,12,14-15,17-18,118,122,125,157
+plugin/scripts/context-read-worker.cjs.map
+  s_464497dbab13a4::t_78f580d4286c54 4-5
+plugin/scripts/mcp-server.cjs
+  s_464497dbab13a4::t_f6a0ac8a66d880 26,351
+plugin/scripts/server-service.cjs
+  s_464497dbab13a4::t_1dbcea00bf7b4c 69,500
+plugin/scripts/transcript-watcher.cjs
+  s_464497dbab13a4::t_581e4e83c9f0ad 20
+plugin/scripts/worker-service.cjs
+  s_464497dbab13a4::t_42d33639f01a87 5-6,10,60,64,66,70,73,77,85-86,89,92,108,123-126,128,132,136,143,148,151,162,164,184,221,230,373,381,410,444,449,460,464,475,544,549,565,567,569,667,672,702,723,737-738,994,1097,1099,1112,1218,1228,1233,1251,1254,1260,1269,1285,1404,2550,2730,2884,2888,2890,2908,2964,2976,2989,2999,3020,3282,3400,3414,3421,3444,3494,3497-3498,3511,3513,3516
+plugin/scripts/worker-service.cjs.map
+  s_464497dbab13a4::t_959d303a619248 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4e4c17676d0f9f446a43274e62e62c01dd7f74e0",
+  "prompts": {},
+  "sessions": {
+    "s_464497dbab13a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41f5ae5d-7f26-461e-9010-a7ca42d583a9",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sebastian Bobadilla Suarez <sebastian.suarez@oncorps.io>"
+    }
+  }
+}
