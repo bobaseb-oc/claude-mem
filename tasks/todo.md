@@ -231,7 +231,17 @@ Design:
   list, or '*'), not CLAUDE_MEM_CONTEXT_VIEW; no `tree link` CLI yet (the
   import line is added by hand); merges use the observer model; merged
   projects (decision 2) are not rebuilt yet.
-- [ ] Ship (15.0.3), then enable per project; backfill ≈ leaves/24 calls
+- [x] Shipped 15.0.3 (tree), 15.0.4 (skip blank project names), 15.0.5 (hook
+      section left out only where CLAUDE.local.md imports the view file)
+- [x] Enabled 2026-10-26: CLAUDE_MEM_TREE_PROJECTS=*, _FILE_BYTES=131072,
+      _BATCH=64 (~75 nodes/min; ~40k leaves → ~9 h backfill)
+- [x] Import line added to CLAUDE.local.md in 21 repos matched by name,
+      excluded via .git/info/exclude (no tracked change); ~/.claude skipped
+      (its CLAUDE.local.md is imported globally); ~45 projects unmatched keep
+      the hook section
+- [x] Deleted the `tree-smoke` session the live smoke test left behind
+- Status bar: the statusLine ran `node`, missing from the stale inherited
+  PATH; now `bun ~/.claude/hooks/statusline.js` (same output)
 
 ### Proof for each step
 `bun test tests` green; each new test fails with its change reverted;
