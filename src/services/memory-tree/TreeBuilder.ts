@@ -80,10 +80,14 @@ export class TreeBuilder {
       // A blank project (sessions stored without one) is no project's history.
       .map(row => row.project).filter(project => Boolean(project?.trim()) && enabled(project));
 
+    // Number every project's new leaves first: cheap, no model call, and it
+    // gives each project's view its whole history at once, as entry lines,
+    // even while a long backfill (or an outage) holds the merges elsewhere.
+    for (const project of projects) indexNewLeaves(db, project);
+
     let built = 0;
     let calls = 0;
     for (const project of projects) {
-      indexNewLeaves(db, project);
       while (calls < MAX_CALLS_PER_TICK) {
         const merges = readyMerges(db, project, Math.max(1, batch));
         if (merges.length === 0) break;

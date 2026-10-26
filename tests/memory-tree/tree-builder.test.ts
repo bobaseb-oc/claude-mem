@@ -107,6 +107,15 @@ describe('TreeBuilder', () => {
   });
 });
 
+it("numbers every enabled project's leaves before spending calls, so a later project has its leaves at once", async () => {
+  for (let i = 0; i < 200; i++) addObservation('a-first', `o${i}`, i + 1);
+  for (let i = 0; i < 3; i++) addObservation('z-later', `x${i}`, i + 1);
+  // A failed call ends the tick on the first project.
+  const builder = new TreeBuilder({ db: () => db, runPrompt: async () => { throw new Error('outage'); }, settings: () => ({ projects: '*', batch: 2 }) });
+  await builder.tick();
+  expect(leafCount(db, 'z-later')).toBe(3);
+});
+
 it("skips a blank project name, even with '*'", async () => {
   addObservation('', 'no project', 1);
   addObservation('', 'no project either', 2);
