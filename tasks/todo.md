@@ -214,6 +214,25 @@ Design:
 - Live check: `/context` shows the import's size; the InstructionsLoaded
   hook logs when it loads (start, compact, clear, resume).
 
+### Phase 2 status (branch feat/memory-tree)
+- [x] 2a/2c/2d core: MemoryTree.ts (leaves, merges, deletion, view, zoom), 17 tests (ceaa90193)
+- [x] Tables created by SessionStore, no schema stamp; API deletes drop the
+      summaries above a row; route test fails without it (43597da2a)
+- [x] 2b builder: batched merges, one call per ≤24, escaped data, pause on
+      failure (f17ba4770); runs in the worker once a minute (30ed57dca)
+- [x] SessionStart section within CLAUDE_MEM_TREE_VIEW_CHARS, reserved before
+      upstream's block is fitted (d0add5e3d)
+- [x] memory_zoom MCP tool + /api/memory-tree/{zoom,status} (c9647a9ed)
+- [x] 2f view file ~/.claude-mem/views/<name>-<hash>.md, atomic, 0600
+      (d3a8f9e14); hook section left out while it is on (feade12f3)
+- [x] Live check: a real merge call (claude-sonnet-5-5) on a DB copy
+      answered 4/4 items in format, 113–200 chars each
+- Changed from the plan: the switch is CLAUDE_MEM_TREE_PROJECTS ('' off,
+  list, or '*'), not CLAUDE_MEM_CONTEXT_VIEW; no `tree link` CLI yet (the
+  import line is added by hand); merges use the observer model; merged
+  projects (decision 2) are not rebuilt yet.
+- [ ] Ship (15.0.3), then enable per project; backfill ≈ leaves/24 calls
+
 ### Proof for each step
 `bun test tests` green; each new test fails with its change reverted;
 then a live check on this repo: a new session's block shows `[l:i]`
