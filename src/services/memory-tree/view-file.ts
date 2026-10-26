@@ -9,8 +9,8 @@
  */
 import { Database } from 'bun:sqlite';
 import { createHash } from 'crypto';
-import { chmodSync, mkdirSync, renameSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import { basename, dirname, join, resolve } from 'path';
 import { treeContextSection } from './context-section.js';
 
 /** The file for a project: a readable, filesystem-safe name plus a short hash, so distinct projects never collide. */
@@ -18,6 +18,24 @@ export function viewFilePath(directory: string, project: string): string {
   const readable = project.replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^\.+/, '').slice(0, 80) || 'project';
   const hash = createHash('sha256').update(project).digest('hex').slice(0, 8);
   return join(directory, `${readable}-${hash}.md`);
+}
+
+/**
+ * Whether a CLAUDE.local.md at `cwd` or a directory above it imports this
+ * project's view file, so the SessionStart hook can leave its own tree
+ * section out there (and only there).
+ */
+export function viewFileImported(cwd: string, directory: string, project: string): boolean {
+  const name = basename(viewFilePath(directory, project));
+  let current = resolve(cwd);
+  for (let depth = 0; depth < 12; depth++) {
+    const file = join(current, 'CLAUDE.local.md');
+    if (existsSync(file) && readFileSync(file, 'utf-8').includes(name)) return true;
+    const parent = dirname(current);
+    if (parent === current) return false;
+    current = parent;
+  }
+  return false;
 }
 
 /** Rewrites the project's view file within `maxBytes`. Returns its path, or null when off or empty. */

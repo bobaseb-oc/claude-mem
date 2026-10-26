@@ -3,7 +3,8 @@ import path from 'path';
 import { homedir } from 'os';
 import { existsSync, unlinkSync } from 'fs';
 import { Database } from 'bun:sqlite';
-import { DB_PATH, USER_SETTINGS_PATH } from '../../shared/paths.js';
+import { DATA_DIR, DB_PATH, USER_SETTINGS_PATH } from '../../shared/paths.js';
+import { viewFileImported } from '../memory-tree/view-file.js';
 import { logger } from '../../utils/logger.js';
 import { SettingsDefaultsManager } from '../../shared/SettingsDefaultsManager.js';
 import { treeContextSection } from '../memory-tree/context-section.js';
@@ -567,11 +568,13 @@ export async function generateServerSessionStartContext(
 }
 
 /** Fork: the tree section for this project, or '' (off, nothing built, or tables not created yet). Never throws. */
-function memoryTreeSectionFor(db: Database, project: string): string {
+function memoryTreeSectionFor(db: Database, project: string, cwd: string): string {
   try {
     const settings = SettingsDefaultsManager.loadFromFile(USER_SETTINGS_PATH);
-    // With the view file on, CLAUDE.local.md imports the tree; don't inject it twice.
-    if ((Number.parseInt(settings.CLAUDE_MEM_TREE_FILE_BYTES, 10) || 0) > 0) return '';
+    // Where this repo's CLAUDE.local.md imports the view file, the tree is
+    // already loaded; don't inject it twice. Elsewhere the hook still shows it.
+    if ((Number.parseInt(settings.CLAUDE_MEM_TREE_FILE_BYTES, 10) || 0) > 0
+      && viewFileImported(cwd, path.join(DATA_DIR, 'views'), project)) return '';
     return treeContextSection(db, project, {
       projects: settings.CLAUDE_MEM_TREE_PROJECTS,
       viewChars: Number.parseInt(settings.CLAUDE_MEM_TREE_VIEW_CHARS, 10) || 6000,
@@ -617,7 +620,7 @@ export async function generateContextWithStats(
     const summaries = querySummariesMulti(db, queryProjects, scope.config, scope.platformSource);
     // Fork: the memory tree section, when CLAUDE_MEM_TREE_PROJECTS names this
     // project. Its length is reserved first, so upstream's block fits the rest.
-    const tree = input?.full ? '' : memoryTreeSectionFor(rawDb, scope.project);
+    const tree = input?.full ? '' : memoryTreeSectionFor(rawDb, scope.project, scope.cwd);
     const treeInput = tree ? { ...input, reserveChars: (input?.reserveChars ?? 0) + tree.length + 2 } : input;
     const rendered = renderContextFromRows({ observations, summaries }, treeInput, forHuman, scope);
     return { ...rendered, text: tree ? `${rendered.text}\n\n${tree}` : rendered.text, readKeys: queryProjects };
